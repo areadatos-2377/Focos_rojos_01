@@ -70,11 +70,19 @@
 - [ ] Despliegue en Railway
 - [ ] Nota de proyecto en la bóveda (`10 Projects/`)
 
-## Datos de acceso en desarrollo
+## Cuentas en desarrollo
 
-| Usuario | Contraseña | Rol |
-|---|---|---|
-| `admin` | `FocosRojos2026!` | super_admin |
-| `ana` | `FocosRojos2026!` | regional (Sureste) |
+El entorno local necesita al menos un super administrador. Créalo así:
 
-Solo para el entorno local. Hay datos de prueba en Chiapas.
+```bash
+docker compose exec backend python manage.py createsuperuser
+```
+
+Después, desde la aplicación (Administración → Usuarios) se dan de alta las demás
+cuentas. Para poblar las 24 entidades con situaciones de ejemplo:
+
+```bash
+docker compose exec backend python manage.py seed_ejemplos --limpiar
+```
+
+No se anotan contraseñas en el repositorio, ni siquiera de desarrollo.
