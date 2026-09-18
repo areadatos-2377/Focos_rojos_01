@@ -3,10 +3,56 @@
 
 /* ---------- Estructura ---------- */
 
+/* Escenario y marco de ventana, tomados del mockup: la aplicacion se presenta
+   dentro de un recuadro con su propia barra, no ocupando toda la pantalla. */
+.escenario {
+  max-width: 1320px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.marco {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 1px rgba(22, 26, 29, .03),
+    0 28px 70px -32px rgba(22, 26, 29, .22);
+}
+
+.marco__barra {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bone);
+}
+
+.marco__barra i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #E3DED3;
+  display: block;
+}
+
+.marco__titulo {
+  margin-left: 10px;
+  font-family: var(--fuente-mono);
+  font-size: 11px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--gray-tx);
+}
+
 .app {
   display: grid;
   grid-template-columns: 248px 1fr;
-  min-height: 100vh;
+  min-height: 720px;
 }
 
 .barra {
@@ -61,7 +107,7 @@
 .barra__usuario { font-size: 13px; font-weight: 600; }
 .barra__rol { font-size: 11px; color: var(--dorado-l); text-transform: uppercase; letter-spacing: .08em; }
 
-.contenido { padding: 34px 38px 64px; max-width: 1180px; }
+.contenido { padding: 30px 34px 56px; overflow-x: auto; }
 
 /* ---------- Encabezados ---------- */
 
@@ -312,10 +358,139 @@ textarea.campo__control { min-height: 84px; resize: vertical; font-family: inher
 }
 
 @media (max-width: 860px) {
-  .app { grid-template-columns: 1fr; }
+  .marco { border: none; border-radius: 0; box-shadow: none; }
+  .marco__barra { display: none; }
+  .app { grid-template-columns: 1fr; min-height: 100vh; }
   .barra { flex-direction: row; align-items: center; gap: 16px; padding: 14px 18px; }
   .barra__nav { flex-direction: row; overflow-x: auto; }
   .barra__pie { border: none; padding: 0; }
   .contenido { padding: 22px 18px 48px; }
   .campo__fila { grid-template-columns: 1fr; }
+}
+
+/* ---------- Tabla de concentrado (solo administradores) ---------- */
+
+.filtros {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  padding: 14px 16px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+}
+
+.filtros__campo { display: flex; flex-direction: column; gap: 4px; }
+
+.filtros__etiqueta {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--gray-tx);
+}
+
+.filtros__control {
+  font: 500 13px var(--fuente-texto);
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bone);
+  color: var(--black);
+  min-width: 150px;
+}
+
+.filtros__control:focus { outline: 2px solid var(--verde-l); outline-offset: -1px; }
+
+.tabla-caja {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--paper);
+}
+
+.tabla { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+.tabla thead th {
+  background: var(--verde-d);
+  color: #fff;
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  padding: 12px 14px;
+  white-space: nowrap;
+}
+
+.tabla tbody td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.tabla tbody tr:last-child td { border-bottom: none; }
+.tabla tbody tr:hover { background: var(--verde-pale-bg); }
+
+.tabla__grupo td {
+  background: var(--bone);
+  font-family: var(--fuente-titulo);
+  font-weight: 600;
+  color: var(--verde);
+  font-size: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.tabla__grupo span { font-family: var(--fuente-texto); font-weight: 500; color: var(--gray-tx); font-size: 12px; }
+
+.tabla__prioridad {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--verde);
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.tabla__prioridad--top { background: var(--dorado); }
+.tabla__prioridad--sin { background: var(--gray); }
+
+.tabla__tema {
+  max-width: 460px;
+  line-height: 1.45;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  font: inherit;
+  color: var(--black);
+  cursor: pointer;
+}
+
+.tabla__tema:hover { color: var(--verde); text-decoration: underline; }
+.tabla__entidad { font-weight: 600; white-space: nowrap; }
+.tabla__pie { padding: 12px 16px; background: var(--bone); border-top: 1px solid var(--border); font-size: 12px; color: var(--gray-tx); }
+
+.resumen { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+
+.resumen__dato {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--verde);
+  border-radius: 10px;
+  padding: 10px 16px;
+  min-width: 118px;
+}
+
+.resumen__dato--acento { border-left-color: var(--dorado); }
+.resumen__cifra { font-family: var(--fuente-titulo); font-size: 23px; font-weight: 600; color: var(--verde-d); }
+.resumen__etiqueta { font-size: 11px; color: var(--gray-tx); text-transform: uppercase; letter-spacing: .06em; }
+
+.barra__seccion {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .42);
+  margin: 16px 0 5px 12px;
 }

@@ -83,7 +83,7 @@ class UsuarioViewSet(viewsets.ModelViewSet):
             return [IsAuthenticated(), EsAdministradorOSuperAdmin()]
         return [IsAuthenticated(), EsSuperAdmin()]
 
-    @action(detail=True, methods=["post"])
+    @action(detail=True, methods=["post"], url_path="resetear-password")
     def resetear_password(self, request, pk=None):
         """Asigna una contrasena temporal y la devuelve UNA sola vez."""
         import secrets

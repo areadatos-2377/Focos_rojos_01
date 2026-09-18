@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -35,17 +36,30 @@ class SituacionViewSet(AlcanceEntidadMixin, viewsets.ModelViewSet):
     def get_queryset(self):
         qs = super().get_queryset()
 
-        entidad_clave = self.request.query_params.get("entidad_clave")
+        parametros = self.request.query_params
+
+        entidad_clave = parametros.get("entidad_clave")
         if entidad_clave:
             qs = qs.filter(entidad__clave=entidad_clave)
 
+        # Filtros de la vista de tabla (solo utiles con alcance nacional).
+        region = parametros.get("region")
+        if region:
+            qs = qs.filter(entidad__region__clave=region)
+
+        orden = parametros.get("orden")
+        if orden:
+            qs = qs.filter(orden=orden)
+
         if self.action == "list":
-            archivadas = self.request.query_params.get("archivadas", "").lower()
+            archivadas = parametros.get("archivadas", "").lower()
             qs = qs.archivadas() if archivadas in ("1", "true", "si") else qs.activas()
 
-        busqueda = self.request.query_params.get("q")
+        busqueda = parametros.get("q")
         if busqueda:
-            qs = qs.filter(tema__icontains=busqueda)
+            qs = qs.filter(
+                Q(tema__icontains=busqueda) | Q(responsable__icontains=busqueda)
+            )
 
         return qs
 

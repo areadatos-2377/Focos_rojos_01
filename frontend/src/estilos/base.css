@@ -13,6 +13,13 @@ body {
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
+  /* La aplicacion va contenida, no a sangre completa: el aire alrededor es
+     parte del lenguaje visual del mockup de referencia. */
+  padding: 34px 24px;
+}
+
+@media (max-width: 860px) {
+  body { padding: 0; }
 }
 
 /* Halo de fondo del mockup, recoloreado a verde/dorado */

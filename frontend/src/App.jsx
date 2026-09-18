@@ -5,15 +5,10 @@ import PaginaAcceso from './paginas/Login/PaginaAcceso'
 import PaginaEntidades from './paginas/Entidades/PaginaEntidades'
 import PaginaGaleria from './paginas/Galeria/PaginaGaleria'
 import PaginaReporte from './paginas/Reporte/PaginaReporte'
-
-function EnConstruccion({ titulo }) {
-  return (
-    <>
-      <h1 className="titulo-pagina">{titulo}</h1>
-      <div className="vacio">Esta seccion todavia no esta disponible.</div>
-    </>
-  )
-}
+import PaginaConcentrado from './paginas/Concentrado/PaginaConcentrado'
+import PaginaUsuarios from './paginas/Admin/PaginaUsuarios'
+import PaginaCategorias from './paginas/Admin/PaginaCategorias'
+import PaginaAccesos from './paginas/Admin/PaginaAccesos'
 
 export default function App() {
   return (
@@ -25,18 +20,20 @@ export default function App() {
         <Route path="entidades" element={<PaginaEntidades />} />
         <Route path="entidades/:clave" element={<PaginaGaleria />} />
         <Route path="entidades/:clave/reporte" element={<PaginaReporte />} />
-        <Route
-          path="reportes"
-          element={<EnConstruccion titulo="Reportes generados" />}
-        />
-        <Route
-          path="accesos"
-          element={
-            <RutaProtegida soloAdmin>
-              <EnConstruccion titulo="Historial de accesos" />
-            </RutaProtegida>
-          }
-        />
+
+        {/* Vistas de alcance nacional: solo administradores. */}
+        <Route path="concentrado" element={
+          <RutaProtegida soloAdmin><PaginaConcentrado /></RutaProtegida>
+        } />
+        <Route path="usuarios" element={
+          <RutaProtegida soloAdmin><PaginaUsuarios /></RutaProtegida>
+        } />
+        <Route path="categorias" element={
+          <RutaProtegida soloAdmin><PaginaCategorias /></RutaProtegida>
+        } />
+        <Route path="accesos" element={
+          <RutaProtegida soloAdmin><PaginaAccesos /></RutaProtegida>
+        } />
       </Route>
 
       <Route path="*" element={<Navigate to="/entidades" replace />} />

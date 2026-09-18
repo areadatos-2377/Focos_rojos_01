@@ -116,3 +116,78 @@ export const useReordenar = (entidadClave) => {
     onSettled: () => qc.invalidateQueries({ queryKey: clave }),
   })
 }
+
+/* --- Administracion --- */
+
+export const useRegiones = () =>
+  useQuery({
+    queryKey: ['regiones'],
+    queryFn: async () => (await cliente.get('/regiones/')).data,
+    staleTime: 60 * 60 * 1000,
+  })
+
+export const useUsuarios = () =>
+  useQuery({
+    queryKey: ['usuarios'],
+    queryFn: async () => {
+      const { data } = await cliente.get('/usuarios/', { params: { tamano: 200 } })
+      return data.results ?? data
+    },
+  })
+
+export const useGuardarUsuario = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, ...datos }) =>
+      id
+        ? (await cliente.patch(`/usuarios/${id}/`, datos)).data
+        : (await cliente.post('/usuarios/', datos)).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['usuarios'] }),
+  })
+}
+
+export const useResetearPassword = () =>
+  useMutation({
+    mutationFn: async (id) =>
+      (await cliente.post(`/usuarios/${id}/resetear-password/`)).data,
+  })
+
+export const useRenombrarCategoria = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, nombre }) =>
+      (await cliente.patch(`/categorias/${id}/`, { nombre })).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['categorias'] }),
+  })
+}
+
+export const useFusionarCategorias = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, destino }) =>
+      (await cliente.post(`/categorias/${id}/fusionar/`, { destino })).data,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['categorias'] })
+      qc.invalidateQueries({ queryKey: ['situaciones'] })
+    },
+  })
+}
+
+export const useEliminarCategoria = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (id) => (await cliente.delete(`/categorias/${id}/`)).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['categorias'] }),
+  })
+}
+
+export const useAccesos = (usuarioId) =>
+  useQuery({
+    queryKey: ['accesos', usuarioId ?? 'todos'],
+    queryFn: async () => {
+      const { data } = await cliente.get('/auditoria/accesos/', {
+        params: { usuario: usuarioId || undefined, tamano: 100 },
+      })
+      return data.results ?? data
+    },
+  })

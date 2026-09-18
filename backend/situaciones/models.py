@@ -45,8 +45,11 @@ class Situacion(models.Model):
         on_delete=models.PROTECT,
         related_name="situaciones",
     )
-    tema = models.CharField("tema", max_length=300)
-    fecha_inicio = models.DateField("fecha de inicio")
+    # Texto largo, no un titulo: en el formato real una situacion enumera varios
+    # puntos con cifras (ver legacy/Formato_Focos_Rojos_Gira_ejemplo.docx).
+    tema = models.TextField("tema")
+    # Opcional: en la practica casi siempre se deja en blanco.
+    fecha_inicio = models.DateField("fecha de inicio", null=True, blank=True)
 
     estatus = models.CharField(
         "estatus", max_length=12, choices=Estatus.choices,

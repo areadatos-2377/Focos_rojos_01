@@ -20,12 +20,12 @@ Campos, derivados del formato institucional:
 |---|---|---|
 | Entidad | FK | Define quién puede verla (RBAC) |
 | Categoría | FK a catálogo | Lista desplegable ampliable |
-| Tema | texto | |
-| Fecha de inicio | fecha | |
+| Tema | texto largo | **No es un título**: en el formato real enumera varios puntos con cifras |
+| Fecha de inicio | fecha, **opcional** | En la práctica suele dejarse en blanco |
 | Estatus (clave) | enum `ABIERTA` / `EN_PROCESO` / `CERRADA` | Sirve para agrupar y contar |
 | Estatus (detalle) | texto largo | El comentario extenso del formato |
 | Acciones que se están realizando | texto largo | |
-| Responsable | texto libre | **No** es usuario del sistema |
+| Responsable | texto libre | **No** es usuario del sistema. Suele ser un área ("Coordinación de Finanzas"), no una persona |
 | Fecha estimada de solución | fecha | |
 | Orden de importancia | entero | 1 = más urgente, por entidad |
 
@@ -101,3 +101,21 @@ Los tokens ya existen en ese archivo: `--verde:#1E5B4F`, `--verde-d:#002F2A`,
 `--verde-l:#2E8A77`, `--dorado:#A57F2C`, `--dorado-l:#D4AC4E`.
 
 Interfaz en español. Los logos institucionales los proporcionará el usuario más adelante.
+
+
+## Vista de concentrado (solo administradores)
+
+Tabla de alcance nacional para cruzar datos entre estados: por ejemplo, ver todas las
+prioridades 1 del país, o todo lo abierto en una categoría.
+
+- **Filtros**: región, entidad, categoría, estatus, prioridad (1–5), búsqueda por tema
+  o responsable, y alternador de archivadas.
+- **Agrupación**: sin agrupar, por región, entidad, categoría, estatus o prioridad.
+- Los regionales no la ven: para ellos sería su propia galería con más pasos.
+
+## Identidad visual: marco de ventana
+
+La aplicación se presenta **contenida dentro de un recuadro** con su propia barra de
+título, no a sangre completa. Es una convención de diseño que el usuario usa en sus
+aplicaciones y hay que conservarla. En pantallas menores a 860 px el marco desaparece
+y la aplicación ocupa todo el ancho.
