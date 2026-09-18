@@ -56,7 +56,15 @@ del PDF) siguen sin verificarse y condicionan el despliegue.
    validador que exigía `archivada_en` (campo de solo lectura) y rompía cualquier PATCH
    con `KeyError`. Se desactivó con `validators = []` en el serializer; la garantía real
    la da la base de datos.
-5. **La imagen pesa 1.23 GB**, no ~700 MB: esa cifra era solo el delta de LibreOffice.
+5. **Tamaño de la imagen: 1.03 GB.** Desglose medido: LibreOffice y fuentes 460 MB,
+   dependencias de Python 151 MB, base Debian + Python ~156 MB, aplicación ~12 MB.
+   Faltaba un `.dockerignore`: el `.venv` local se colaba en la imagen y sumaba
+   200 MB inútiles. Ya corregido (1.23 GB → 1.03 GB).
+6. **Riesgo R2 RESUELTO.** El PDF se verificó visualmente: el membrete institucional
+   (Gobierno de México, IMSS Bienestar, la ilustración), las tipografías, los colores
+   y las tablas salen idénticos al Word original. Conversión en ~3.3 s, PDF de ~136 KB.
+7. **Consumo de memoria medido:** 108 MB en reposo, pico de 217 MB durante la
+   conversión. Holgado para cualquier plan de Railway.
 
 ## Cómo correr las pruebas sin Docker
 

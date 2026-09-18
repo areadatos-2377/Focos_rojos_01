@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "usuarios",
     "catalogos",
     "situaciones",
+    "reportes",
 ]
 
 MIDDLEWARE = [

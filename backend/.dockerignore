@@ -1,0 +1,21 @@
+# Entorno virtual local: se usa para correr pruebas sin Docker.
+# Si se copia a la imagen agrega ~150 MB inutiles (la imagen instala sus propias
+# dependencias con pip) y ademas trae binarios de Windows que no sirven en Linux.
+.venv/
+venv/
+
+# Cache de Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Archivos generados en tiempo de ejecucion
+tmp/
+staticfiles/
+media/
+
+# Entorno y control de versiones
+.env
+.git/
