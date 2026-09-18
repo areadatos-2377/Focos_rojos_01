@@ -632,3 +632,37 @@ textarea.campo__control { min-height: 84px; resize: vertical; font-family: inher
   font-weight: 700;
   cursor: default;
 }
+
+.mapa { width: 100%; max-width: 860px; display: block; margin: 0 auto; height: auto; }
+
+.mapa__estado {
+  cursor: pointer;
+  transition: filter .12s, stroke .12s;
+}
+
+.mapa__estado:hover,
+.mapa__estado:focus-visible {
+  filter: brightness(1.12) drop-shadow(0 3px 8px rgba(22, 26, 29, .3));
+  stroke: var(--verde-d);
+  stroke-width: 2;
+  outline: none;
+}
+
+.alternador {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--paper);
+}
+
+.alternador__opcion {
+  font: 600 12px var(--fuente-texto);
+  padding: 6px 15px;
+  border: none;
+  background: none;
+  color: var(--gray-tx);
+  cursor: pointer;
+}
+
+.alternador__opcion--activa { background: var(--verde); color: #fff; }

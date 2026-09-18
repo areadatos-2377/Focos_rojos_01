@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import cliente, { mensajeDeError } from '../../api/cliente'
+import MapaReal from './MapaReal'
 import {
   COLUMNAS, CUADRICULA, FILAS, RAMPA, SIN_DATOS, TINTA, TINTA_SIN_DATOS,
   escalon, rangosLeyenda,
@@ -45,6 +46,7 @@ export default function PaginaPanorama() {
   const navegar = useNavigate()
   const [metrica, setMetrica] = useState('abiertas')
   const [verTabla, setVerTabla] = useState(false)
+  const [forma, setForma] = useState('mapa')
   const [encima, setEncima] = useState(null)
 
   const { data, isLoading, error } = useQuery({
@@ -112,6 +114,18 @@ export default function PaginaPanorama() {
           </select>
         </div>
         <span className="barra-acciones__espacio" />
+        <div className="alternador" role="group" aria-label="Forma del mapa">
+          <button type="button"
+            className={`alternador__opcion${forma === 'mapa' ? ' alternador__opcion--activa' : ''}`}
+            onClick={() => setForma('mapa')}>
+            Mapa
+          </button>
+          <button type="button"
+            className={`alternador__opcion${forma === 'mosaico' ? ' alternador__opcion--activa' : ''}`}
+            onClick={() => setForma('mosaico')}>
+            Mosaico
+          </button>
+        </div>
         <button type="button" className={`chip${verTabla ? ' chip--activo' : ''}`}
           onClick={() => setVerTabla((v) => !v)}>
           {verTabla ? 'Ver graficos' : 'Ver como tabla'}
@@ -128,6 +142,16 @@ export default function PaginaPanorama() {
               <Leyenda maximo={maximoMapa} titulo="Situaciones" />
             </header>
 
+            {forma === 'mapa' ? (
+              <MapaReal
+                porClave={porClave}
+                metrica={metrica}
+                maximo={maximoMapa}
+                onEncima={setEncima}
+                onSalir={() => setEncima(null)}
+                onElegir={(clave) => navegar(`/entidades/${clave}`)}
+              />
+            ) : (
             <div className="mosaico"
               style={{ gridTemplateColumns: `repeat(${COLUMNAS}, 1fr)`,
                        gridTemplateRows: `repeat(${FILAS}, 1fr)` }}>
@@ -163,6 +187,7 @@ export default function PaginaPanorama() {
                 )
               })}
             </div>
+            )}
 
             <div className="mosaico__pie">
               {encima ? (
@@ -172,7 +197,8 @@ export default function PaginaPanorama() {
                   {encima.archivadas > 0 && `, ${encima.archivadas} archivadas`}
                 </>
               ) : (
-                'Pasa el cursor sobre una entidad para ver su detalle. Haz clic para abrirla.'
+                `Pasa el cursor sobre una entidad para ver su detalle. Haz clic para abrirla.${
+                  forma === 'mapa' ? ' Los estados en gris no operan con IMSS-Bienestar.' : ''}`
               )}
             </div>
           </section>
