@@ -1,12 +1,18 @@
-"""Situaciones de ejemplo para poder mostrar la aplicacion con contenido realista.
+"""Situaciones de ejemplo para mostrar la aplicacion con contenido realista.
 
-El estilo y las categorias estan tomados de `legacy/Formato_Focos_Rojos_Gira_ejemplo.docx`:
+El estilo y las categorias vienen de `legacy/Formato_Focos_Rojos_Gira_ejemplo.docx`:
 el "tema" enumera varios puntos con cifras, la fecha de inicio suele venir vacia y el
 responsable es un area, no una persona.
 
-DATOS FICTICIOS. No usar en produccion: `--limpiar` borra todas las situaciones.
+Las cinco situaciones de Sinaloa son las del documento real, textuales. El resto se
+componen a partir de arquetipos por categoria, variando cifras, meses y unidades con
+una semilla derivada de la entidad: el resultado es distinto en cada estado pero
+reproducible entre ejecuciones.
+
+DATOS FICTICIOS. `--limpiar` borra todas las situaciones existentes.
 """
 import datetime as dt
+import random
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -16,20 +22,25 @@ from situaciones.models import BitacoraSituacion, Estatus, Situacion
 from usuarios.models import Usuario
 
 CATEGORIAS = [
-    "Recursos Humanos",
-    "Abasto",
-    "Servicios Generales",
-    "Pasivos",
-    "Infraestructura",
-    "Logística",
-    "Seguridad",
+    "Recursos Humanos", "Abasto", "Servicios Generales", "Pasivos",
+    "Infraestructura", "Logística", "Seguridad", "Comunicación",
 ]
 
-# (entidad, categoria, tema, estatus, detalle, acciones, responsable, fecha_inicio)
-EJEMPLOS = [
-    # ---------------- Noroeste ----------------
+MESES = [
+    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre",
+]
+
+UNIDADES = [
+    "Hospital General", "Hospital Rural No. 42", "Hospital Comunitario",
+    "Centro de Salud con Servicios Ampliados", "Hospital Integral",
+    "Centro de Salud urbano", "Hospital de la Mujer",
+]
+
+# Las cinco situaciones reales del documento de ejemplo, textuales.
+SINALOA = [
     (
-        "sinaloa", "Recursos Humanos",
+        "Recursos Humanos",
         "Liberación de 488 plazas por jubilaciones, fallecimientos y renuncias.\n"
         "9 trabajadores pendientes de reincorporación a su plaza de base (por ocupar "
         "puestos de confianza, residencias y motivos personales).\n"
@@ -40,7 +51,7 @@ EJEMPLOS = [
         "Coordinación de Recursos Humanos.", None,
     ),
     (
-        "sinaloa", "Abasto",
+        "Abasto",
         "Claves totales 1503, de las cuales 724 se encuentran en 0.\n"
         "328 claves prioritarias que no tenemos en unidades de salud.\n"
         "Desabasto de 15 claves oncológicas en HGC, HPS e ISCAN.\n"
@@ -50,7 +61,7 @@ EJEMPLOS = [
         "Coordinación de Recursos Materiales.", None,
     ),
     (
-        "sinaloa", "Servicios Generales",
+        "Servicios Generales",
         "Servicio de Gas LP suspendido por falta de pago de los meses de diciembre de "
         "2025, marzo, abril, mayo, junio y julio de 2026.\n"
         "Diésel para plantas de emergencia: peligra la continuidad de los servicios "
@@ -61,7 +72,7 @@ EJEMPLOS = [
         "Coordinación de Finanzas.", dt.date(2025, 12, 1),
     ),
     (
-        "sinaloa", "Pasivos",
+        "Pasivos",
         "Pagos pendientes 2025 a 2 proveedores por $759,777.55:\n"
         "Servicios Generales $398,230.36 y Servicios Médicos Integrales $361,547.19.\n"
         "Pagos pendientes 2026 a 13 proveedores por $125.5 mdp:\n"
@@ -71,7 +82,7 @@ EJEMPLOS = [
         "Coordinación de Finanzas.", None,
     ),
     (
-        "sinaloa", "Infraestructura",
+        "Infraestructura",
         "La sustitución del Hospital General de Guamúchil se encuentra en espera "
         "del anteproyecto para que pueda ingresar a Hacienda.\n"
         "Impermeabilización de 10 unidades médicas: ya existe contrato, pero no "
@@ -80,167 +91,256 @@ EJEMPLOS = [
         "Seguimiento con los enlaces de las respectivas unidades.",
         "Unidad de Infraestructura.", None,
     ),
+]
+
+# (categoria, tema, detalle, acciones, responsable)
+# Marcadores: cada uno tiene su propio rango realista. No son intercambiables:
+#   {plazas} {personas} {unidades} {pct} {semanas} {dias} {proveedores}
+#   {claves_total} {claves_cero} {claves_prio} {piezas} {equipos} {incidentes}
+#   {rutas_sin} {rutas_total} {monto} {monto2} {unidad} {mes} {mes2} {entidad}
+ARQUETIPOS = [
     (
-        "sonora", "Recursos Humanos",
-        "62 plazas de enfermería vacantes en el norte del estado.\n"
-        "Rotación alta en turnos nocturnos: 18 renuncias en el último trimestre.",
-        Estatus.EN_PROCESO, "Convocatoria publicada, en proceso de evaluación.",
+        "Recursos Humanos",
+        "Liberación de {plazas} plazas por jubilaciones, renuncias y defunciones sin "
+        "reposición.\n"
+        "{personas} trabajadores pendientes de reincorporarse a su plaza de base.\n"
+        "{personas} jefaturas de la Estructura Estatal pendientes por contratar.",
+        "En espera de autorización de plazas.",
+        "Gestiones ante la Coordinación de Recursos Humanos.",
+        "Coordinación de Recursos Humanos.",
+    ),
+    (
+        "Recursos Humanos",
+        "{plazas} plazas de enfermería vacantes, concentradas en turnos nocturnos y "
+        "fines de semana.\n"
+        "{personas} renuncias en el último trimestre.\n"
+        "Cobertura incompleta en {unidades} unidades de primer nivel.",
+        "Convocatoria publicada, en proceso de evaluación.",
         "Convocatoria estatal abierta y mesa de trabajo con la representación sindical.",
-        "Coordinación de Recursos Humanos.", dt.date(2026, 6, 15),
+        "Coordinación de Recursos Humanos.",
     ),
     (
-        "sonora", "Logística",
-        "3 de 7 rutas de distribución de medicamento sin unidad asignada.\n"
-        "Retrasos de hasta 12 días en la entrega a unidades de la sierra.",
-        Estatus.ABIERTA, "Sin avance.",
-        "Solicitud de arrendamiento de unidades ante Recursos Materiales.",
-        "Coordinación de Recursos Materiales.", dt.date(2026, 7, 1),
-    ),
-    # ---------------- Sureste ----------------
-    (
-        "chiapas", "Abasto",
-        "412 claves en cero en unidades de primer nivel.\n"
-        "Desabasto de antirretrovirales en 4 hospitales.\n"
-        "Material de curación con surtimiento parcial desde mayo.",
-        Estatus.EN_PROCESO, "Surtimiento parcial en proceso.",
-        "Mesa semanal con el almacén estatal y seguimiento a oficios de compra.",
-        "Coordinación de Recursos Materiales.", dt.date(2026, 5, 4),
-    ),
-    (
-        "chiapas", "Infraestructura",
-        "Hospital Comunitario de Ocosingo: falla en la subestación eléctrica, "
-        "opera con planta de emergencia desde hace 3 semanas.\n"
-        "Centro de Salud Tila: filtraciones en área de urgencias.",
-        Estatus.ABIERTA, "En espera de dictamen técnico.",
-        "Levantamiento técnico solicitado a la Unidad de Infraestructura.",
-        "Unidad de Infraestructura.", dt.date(2026, 8, 3),
-    ),
-    (
-        "chiapas", "Seguridad",
-        "2 unidades médicas en zona de conflicto con acceso restringido.\n"
-        "Personal solicita acompañamiento para traslados nocturnos.",
-        Estatus.EN_PROCESO, "Coordinación con autoridades estatales en curso.",
-        "Mesa de seguridad con la Secretaría de Seguridad Pública estatal.",
-        "Dirección General.", dt.date(2026, 7, 20),
-    ),
-    (
-        "oaxaca", "Recursos Humanos",
-        "Retén de pagos a 140 trabajadores eventuales por inconsistencias en el "
-        "padrón.\n"
-        "24 plazas de médico general sin cubrir en la región Mixteca.",
-        Estatus.EN_PROCESO, "Depuración del padrón al 60%.",
+        "Recursos Humanos",
+        "Pago pendiente de guardias extraordinarias a {personas} trabajadores "
+        "correspondientes a {mes}.\n"
+        "Inconsistencias en el padrón de {personas} eventuales.",
+        "Depuración del padrón en proceso.",
         "Cotejo de expedientes con nómina central.",
-        "Coordinación de Recursos Humanos.", dt.date(2026, 6, 1),
+        "Coordinación de Recursos Humanos.",
     ),
     (
-        "oaxaca", "Servicios Generales",
-        "Contrato de recolección de RPBI vencido en 9 unidades.\n"
-        "Acumulación de residuos en 2 hospitales por encima de la capacidad.",
-        Estatus.ABIERTA, "Urgente. Riesgo sanitario.",
-        "Contratación directa en trámite ante Recursos Materiales.",
-        "Coordinación de Recursos Materiales.", dt.date(2026, 8, 25),
+        "Abasto",
+        "Claves totales {claves_total}, de las cuales {claves_cero} se encuentran en cero.\n"
+        "{claves_prio} claves prioritarias sin existencia en unidades de primer nivel.\n"
+        "Material de curación con surtimiento parcial desde {mes}.",
+        "Surtimiento parcial en proceso.",
+        "Mesa semanal con el almacén estatal y seguimiento a oficios de compra.",
+        "Coordinación de Recursos Materiales.",
     ),
     (
-        "yucatan", "Infraestructura",
-        "Ampliación del área de urgencias del Hospital General: obra detenida "
-        "al 70% por falta de ministración.",
-        Estatus.EN_PROCESO, "Obra detenida, expediente completo.",
-        "Seguimiento a la solicitud de ministración ante Finanzas.",
-        "Unidad de Infraestructura.", dt.date(2026, 4, 10),
-    ),
-    # ---------------- Centro ----------------
-    (
-        "ciudad-de-mexico", "Abasto",
-        "Desabasto de 38 claves de alta rotación en 12 centros de salud.\n"
-        "Retraso en la entrega del proveedor adjudicado en la licitación 2026.",
-        Estatus.EN_PROCESO, "Surtimiento al 45%.",
+        "Abasto",
+        "Desabasto de {claves_prio} claves oncológicas en el {unidad}.\n"
+        "Retraso del proveedor adjudicado en la licitación 2026.\n"
+        "Caducidad próxima de {piezas} piezas en almacén estatal.",
+        "Surtimiento al {pct}%.",
         "Penalización al proveedor y compra emergente autorizada.",
-        "Coordinación de Recursos Materiales.", dt.date(2026, 7, 8),
+        "Coordinación de Recursos Materiales.",
     ),
     (
-        "ciudad-de-mexico", "Comunicación",
-        "Fallas intermitentes del expediente clínico electrónico en 6 unidades.\n"
-        "Enlace de datos insuficiente en 3 centros de salud.",
-        Estatus.ABIERTA, "En diagnóstico.",
-        "Levantamiento con el área de Tecnologías de la Información.",
-        "Coordinación de Tecnologías de la Información.", dt.date(2026, 8, 30),
-    ),
-    (
-        "hidalgo", "Pasivos",
-        "Adeudo con 7 proveedores de servicios de laboratorio por $42.3 mdp "
-        "correspondiente a 2025.",
-        Estatus.ABIERTA, "En espera de suficiencia presupuestal.",
-        "Conciliación de saldos y envío de expediente a Finanzas.",
-        "Coordinación de Finanzas.", dt.date(2025, 11, 1),
-    ),
-    # ---------------- Noreste ----------------
-    (
-        "veracruz", "Recursos Humanos",
-        "210 plazas liberadas por jubilación sin reposición.\n"
-        "Personal de intendencia insuficiente en 15 unidades.",
-        Estatus.ABIERTA, "En espera de autorización de plazas.",
-        "Gestión ante la Coordinación de RH y priorización de unidades.",
-        "Coordinación de Recursos Humanos.", dt.date(2026, 3, 15),
-    ),
-    (
-        "veracruz", "Servicios Generales",
-        "Suministro de agua potable irregular en el Hospital Regional.\n"
-        "Se contratan pipas de forma emergente 3 veces por semana.",
-        Estatus.EN_PROCESO, "Solución temporal en operación.",
-        "Proyecto de pozo propio en evaluación técnica.",
-        "Unidad de Infraestructura.", dt.date(2026, 5, 20),
-    ),
-    (
-        "tamaulipas", "Logística",
-        "Cadena de frío comprometida: 4 refrigeradores de biológicos fuera de "
-        "servicio en la zona centro.",
-        Estatus.EN_PROCESO, "2 equipos ya reemplazados, faltan 2.",
-        "Compra emergente de equipos y resguardo temporal en unidad vecina.",
-        "Coordinación de Recursos Materiales.", dt.date(2026, 8, 12),
-    ),
-    # ---------------- Suroeste ----------------
-    (
-        "guerrero", "Infraestructura",
-        "Daños por lluvias en 6 unidades médicas de la región Costa Chica.\n"
-        "2 unidades operando parcialmente.",
-        Estatus.EN_PROCESO, "Evaluación de daños concluida.",
-        "Gestión de recursos para rehabilitación ante la Unidad de Infraestructura.",
-        "Unidad de Infraestructura.", dt.date(2026, 9, 2),
-    ),
-    (
-        "guerrero", "Abasto",
-        "Desabasto de soluciones intravenosas en 9 unidades.\n"
-        "Caducidad próxima de 1,200 piezas en almacén estatal.",
-        Estatus.ABIERTA, "Sin avance.",
+        "Abasto",
+        "Desabasto de soluciones intravenosas y antibióticos de primera línea "
+        "en {unidades} unidades.\n"
+        "Sin existencia de {claves_prio} claves de alta rotación.",
+        "Sin avance.",
         "Solicitud de redistribución entre entidades de la región.",
-        "Coordinación de Recursos Materiales.", dt.date(2026, 8, 18),
+        "Coordinación de Recursos Materiales.",
     ),
     (
-        "michoacan", "Seguridad",
-        "3 unidades médicas con reporte de incidentes de violencia en el perimetro.\n"
-        "Personal solicita medidas de protección.",
-        Estatus.EN_PROCESO, "Mesa de seguridad instalada.",
+        "Servicios Generales",
+        "Servicio de Gas LP en riesgo de suspensión por falta de pago de {mes} y "
+        "{mes2} de 2026.\n"
+        "Diésel para plantas de emergencia con suministro irregular en {unidades} unidades.\n"
+        "Suficiencias presupuestarias no autorizadas.",
+        "En espera.",
+        "Seguimiento a oficios de solicitudes de pago a la Coordinación de Finanzas.",
+        "Coordinación de Finanzas.",
+    ),
+    (
+        "Servicios Generales",
+        "Contrato de recolección de RPBI vencido en {unidades} unidades.\n"
+        "Acumulación de residuos por encima de la capacidad en el {unidad}.",
+        "Urgente. Riesgo sanitario.",
+        "Contratación directa en trámite ante Recursos Materiales.",
+        "Coordinación de Recursos Materiales.",
+    ),
+    (
+        "Servicios Generales",
+        "Suministro de agua potable irregular en el {unidad}.\n"
+        "Se contratan pipas de forma emergente {veces} veces por semana desde {mes}.",
+        "Solución temporal en operación.",
+        "Proyecto de pozo propio en evaluación técnica.",
+        "Unidad de Infraestructura.",
+    ),
+    (
+        "Pasivos",
+        "Pagos pendientes 2025 a {proveedores} proveedores por ${monto} mdp.\n"
+        "Pagos pendientes 2026 a {proveedores} proveedores por ${monto2} mdp, concentrados en "
+        "servicios médicos integrales y servicios generales.",
+        "En espera de suficiencia presupuestal.",
+        "Conciliación de saldos y envío de expediente a Finanzas.",
+        "Coordinación de Finanzas.",
+    ),
+    (
+        "Pasivos",
+        "Adeudo con {proveedores} proveedores de servicios de laboratorio y gabinete por "
+        "${monto} mdp correspondiente al ejercicio 2025.",
+        "En espera.",
+        "Seguimiento a oficios de solicitudes de pago ante la Coordinación de Finanzas.",
+        "Coordinación de Finanzas.",
+    ),
+    (
+        "Infraestructura",
+        "Sustitución del {unidad} en espera del anteproyecto para ingresar a Hacienda.\n"
+        "Impermeabilización de {unidades} unidades médicas: existe contrato, pero no "
+        "inicia por falta de anticipo.",
+        "En espera de dictamen técnico.",
+        "Seguimiento con los enlaces de las respectivas unidades.",
+        "Unidad de Infraestructura.",
+    ),
+    (
+        "Infraestructura",
+        "Falla en la subestación eléctrica del {unidad}: opera con planta de "
+        "emergencia desde hace {semanas} semanas.\n"
+        "Filtraciones en área de urgencias en {unidades} unidades.",
+        "En espera de dictamen técnico.",
+        "Levantamiento técnico solicitado a la Unidad de Infraestructura.",
+        "Unidad de Infraestructura.",
+    ),
+    (
+        "Infraestructura",
+        "Ampliación del área de urgencias del {unidad}: obra detenida al {pct}% "
+        "por falta de ministración.\n"
+        "Daños por lluvias en {unidades} unidades médicas.",
+        "Obra detenida, expediente completo.",
+        "Gestión de recursos para rehabilitación ante la Unidad de Infraestructura.",
+        "Unidad de Infraestructura.",
+    ),
+    (
+        "Logística",
+        "{rutas_sin} de {rutas_total} rutas de distribución de medicamento sin unidad asignada.\n"
+        "Retrasos de hasta {dias} días en la entrega a unidades alejadas.",
+        "Sin avance.",
+        "Solicitud de arrendamiento de unidades ante Recursos Materiales.",
+        "Coordinación de Recursos Materiales.",
+    ),
+    (
+        "Logística",
+        "Cadena de frío comprometida: {equipos} refrigeradores de biológicos fuera "
+        "de servicio.\n"
+        "Resguardo temporal en unidades vecinas desde {mes}.",
+        "Reemplazo parcial en proceso.",
+        "Compra emergente de equipos y resguardo temporal en unidad vecina.",
+        "Coordinación de Recursos Materiales.",
+    ),
+    (
+        "Seguridad",
+        "{unidades} unidades médicas en zona de acceso restringido.\n"
+        "El personal solicita acompañamiento para traslados nocturnos.",
+        "Coordinación con autoridades estatales en curso.",
+        "Mesa de seguridad con la Secretaría de Seguridad Pública estatal.",
+        "Dirección General.",
+    ),
+    (
+        "Seguridad",
+        "Reporte de {incidentes} incidentes de violencia en el perímetro de unidades "
+        "médicas durante {mes}.\n"
+        "Solicitud de medidas de protección para el personal de guardia.",
+        "Mesa de seguridad instalada.",
         "Coordinación con autoridades municipales y estatales.",
-        "Dirección General.", dt.date(2026, 7, 5),
+        "Dirección General.",
     ),
     (
-        "puebla", "Recursos Humanos",
-        "Pago pendiente de guardias extraordinarias a 87 trabajadores.",
-        Estatus.CERRADA, "Resuelto: pago dispersado el 5 de septiembre.",
+        "Comunicación",
+        "Fallas intermitentes del expediente clínico electrónico en {unidades} unidades.\n"
+        "Enlace de datos insuficiente en {unidades} centros de salud.",
+        "En diagnóstico.",
+        "Levantamiento con el área de Tecnologías de la Información.",
+        "Coordinación de Tecnologías de la Información.",
+    ),
+    (
+        "Comunicación",
+        "{unidades} unidades sin telefonía ni radiocomunicación operativa.\n"
+        "Dificultad para coordinar traslados de urgencia en zonas sin cobertura.",
+        "En espera de contrato de servicio.",
+        "Solicitud de servicio satelital para unidades sin cobertura.",
+        "Coordinación de Tecnologías de la Información.",
+    ),
+]
+
+RESUELTAS = [
+    (
+        "Recursos Humanos",
+        "Pago pendiente de guardias extraordinarias a {personas} trabajadores.",
+        "Resuelto: el pago se dispersó en la nómina de septiembre.",
         "Se aplicó el pago retroactivo en la nómina de septiembre.",
-        "Coordinación de Recursos Humanos.", dt.date(2026, 6, 28),
+        "Coordinación de Recursos Humanos.",
+    ),
+    (
+        "Abasto",
+        "Desabasto de {claves_prio} claves de material de curación en {unidades} unidades.",
+        "Resuelto: surtimiento completo confirmado por el almacén estatal.",
+        "Compra emergente autorizada y entregada.",
+        "Coordinación de Recursos Materiales.",
+    ),
+    (
+        "Servicios Generales",
+        "Suspensión del servicio de lavandería en el {unidad} por falta de pago.",
+        "Resuelto: contrato regularizado.",
+        "Pago liberado por la Coordinación de Finanzas.",
+        "Coordinación de Finanzas.",
     ),
 ]
 
 
+def _rellenar(plantilla: str, azar: random.Random, entidad_nombre: str) -> str:
+    claves_total = azar.randint(900, 1600)
+    return plantilla.format(
+        plazas=azar.randint(35, 520),
+        personas=azar.randint(6, 180),
+        unidades=azar.randint(2, 14),
+        pct=azar.choice([25, 35, 45, 55, 60, 70, 80]),
+        semanas=azar.randint(2, 8),
+        dias=azar.randint(4, 15),
+        veces=azar.randint(2, 5),
+        proveedores=azar.randint(2, 16),
+        claves_total=claves_total,
+        claves_cero=azar.randint(180, claves_total // 2),
+        claves_prio=azar.randint(8, 120),
+        piezas=azar.randint(300, 2500),
+        equipos=azar.randint(2, 9),
+        incidentes=azar.randint(2, 9),
+        rutas_sin=azar.randint(2, 4),
+        rutas_total=azar.randint(6, 12),
+        monto=azar.choice(["12.4", "28.7", "42.3", "59.8", "125.5"]),
+        monto2=azar.choice(["5.5", "18.2", "34.6", "76.1", "120"]),
+        unidad=azar.choice(UNIDADES),
+        mes=azar.choice(MESES),
+        mes2=azar.choice(MESES),
+        entidad=entidad_nombre,
+    )
+
+
 class Command(BaseCommand):
-    help = "Crea situaciones de ejemplo (DATOS FICTICIOS) para mostrar la aplicacion."
+    help = "Crea situaciones de ejemplo (DATOS FICTICIOS) en todas las entidades."
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--limpiar",
-            action="store_true",
+            "--limpiar", action="store_true",
             help="Borra TODAS las situaciones existentes antes de sembrar.",
+        )
+        parser.add_argument(
+            "--por-entidad", type=int, default=5,
+            help="Situaciones activas por entidad (por omision 5, el tope del formato).",
         )
 
     @transaction.atomic
@@ -252,72 +352,119 @@ class Command(BaseCommand):
         elif Situacion.objects.exists():
             self.stdout.write(
                 self.style.WARNING(
-                    "Ya hay situaciones registradas. Usa --limpiar si quieres "
-                    "reemplazarlas por los ejemplos."
+                    "Ya hay situaciones registradas. Usa --limpiar para reemplazarlas."
                 )
             )
             return
 
-        autor = (
-            Usuario.objects.filter(rol="SUPER_ADMIN").first()
-            or Usuario.objects.first()
-        )
+        autor = Usuario.objects.filter(rol="SUPER_ADMIN").first() or Usuario.objects.first()
+        categorias = self._asegurar_categorias(autor)
 
-        categorias = {
-            nombre: Categoria.objects.get_or_create(
-                nombre_normalizado=nombre.lower()
-                .replace("í", "i").replace("ó", "o").replace("á", "a"),
-                defaults={"nombre": nombre, "creada_por": autor},
-            )[0]
-            for nombre in CATEGORIAS + ["Comunicación"]
-        }
+        por_entidad = max(1, min(opciones["por_entidad"], 5))
+        creadas = 0
+        archivadas = 0
 
-        creadas, sin_entidad = 0, set()
-        ordenes: dict[int, int] = {}
+        for entidad in Entidad.objects.select_related("region").order_by("nombre"):
+            # Semilla derivada del nombre: cada entidad recibe una combinacion propia
+            # y estable entre ejecuciones.
+            azar = random.Random(f"focos-{entidad.clave}")
 
-        for (clave, categoria, tema, estatus, detalle,
-             acciones, responsable, inicio) in EJEMPLOS:
-            entidad = Entidad.objects.filter(clave=clave).first()
-            if entidad is None:
-                sin_entidad.add(clave)
-                continue
-
-            archivada = estatus == Estatus.CERRADA
-            if archivada:
-                orden = None
+            if entidad.clave == "sinaloa":
+                bloques = [
+                    (cat, tema, est, det, acc, resp, ini)
+                    for cat, tema, est, det, acc, resp, ini in SINALOA
+                ]
             else:
-                ordenes[entidad.pk] = ordenes.get(entidad.pk, 0) + 1
-                orden = ordenes[entidad.pk]
+                bloques = self._componer(azar, entidad, por_entidad)
 
-            situacion = Situacion.objects.create(
-                entidad=entidad,
-                categoria=categorias[categoria],
-                tema=tema,
-                fecha_inicio=inicio,
-                estatus=estatus,
-                estatus_detalle=detalle,
-                acciones=acciones,
-                responsable=responsable,
-                fecha_estimada_solucion=None,
-                orden=orden,
-                archivada_en=dt.datetime(2026, 9, 5, 12, 0, tzinfo=dt.timezone.utc)
-                if archivada else None,
-                creada_por=autor,
-                actualizada_por=autor,
-            )
-            BitacoraSituacion.objects.create(
-                situacion=situacion, usuario=autor, accion="CREACION"
-            )
-            creadas += 1
+            for orden, (cat, tema, estatus, detalle, acciones, resp, inicio) in enumerate(
+                bloques[:por_entidad], start=1
+            ):
+                self._crear(
+                    entidad, categorias[cat], tema, estatus, detalle, acciones,
+                    resp, inicio, orden, autor,
+                )
+                creadas += 1
 
-        if sin_entidad:
-            self.stdout.write(
-                self.style.WARNING(f"Entidades no encontradas: {', '.join(sin_entidad)}")
-            )
+            # Una de cada tres entidades arrastra ademas una situacion ya resuelta,
+            # para que la vista de archivadas tenga contenido.
+            if azar.random() < 0.34:
+                cat, tema, detalle, acciones, resp = azar.choice(RESUELTAS)
+                self._crear(
+                    entidad, categorias[cat],
+                    _rellenar(tema, azar, entidad.nombre),
+                    Estatus.CERRADA, detalle, acciones, resp,
+                    dt.date(2026, azar.randint(3, 7), azar.randint(1, 28)),
+                    None, autor,
+                    archivada_en=dt.datetime(
+                        2026, 9, azar.randint(1, 10), 12, 0, tzinfo=dt.timezone.utc
+                    ),
+                )
+                creadas += 1
+                archivadas += 1
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"{creadas} situaciones de ejemplo creadas en "
-                f"{len(ordenes)} entidades. DATOS FICTICIOS."
+                f"{creadas} situaciones creadas en {Entidad.objects.count()} entidades "
+                f"({archivadas} archivadas). DATOS FICTICIOS."
             )
         )
+
+    def _asegurar_categorias(self, autor) -> dict:
+        from catalogos.normalizacion import normalizar_nombre
+
+        catalogo = {}
+        for nombre in CATEGORIAS:
+            catalogo[nombre] = Categoria.objects.get_or_create(
+                nombre_normalizado=normalizar_nombre(nombre),
+                defaults={"nombre": nombre, "creada_por": autor},
+            )[0]
+        return catalogo
+
+    def _componer(self, azar, entidad, cuantas) -> list:
+        """Elige arquetipos de categorias distintas y los rellena para esta entidad."""
+        elegidos = []
+        categorias_usadas = set()
+        candidatos = ARQUETIPOS[:]
+        azar.shuffle(candidatos)
+
+        for cat, tema, detalle, acciones, resp in candidatos:
+            if len(elegidos) >= cuantas:
+                break
+            if cat in categorias_usadas:
+                continue
+            categorias_usadas.add(cat)
+            elegidos.append((
+                cat,
+                _rellenar(tema, azar, entidad.nombre),
+                azar.choice([Estatus.ABIERTA, Estatus.EN_PROCESO, Estatus.ABIERTA]),
+                _rellenar(detalle, azar, entidad.nombre),
+                acciones,
+                resp,
+                # La fecha de inicio casi siempre viene vacia, como en el formato real.
+                dt.date(2026, azar.randint(2, 8), azar.randint(1, 28))
+                if azar.random() < 0.4 else None,
+            ))
+        return elegidos
+
+    def _crear(self, entidad, categoria, tema, estatus, detalle, acciones,
+               responsable, inicio, orden, autor, archivada_en=None):
+        situacion = Situacion.objects.create(
+            entidad=entidad,
+            categoria=categoria,
+            tema=tema,
+            fecha_inicio=inicio,
+            estatus=estatus,
+            estatus_detalle=detalle,
+            acciones=acciones,
+            responsable=responsable,
+            fecha_estimada_solucion=None,
+            orden=orden,
+            archivada_en=archivada_en,
+            creada_por=autor,
+            actualizada_por=autor,
+        )
+        BitacoraSituacion.objects.create(
+            situacion=situacion, usuario=autor, accion="CREACION"
+        )
+        return situacion

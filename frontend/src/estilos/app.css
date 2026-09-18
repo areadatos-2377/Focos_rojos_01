@@ -6,7 +6,7 @@
 /* Escenario y marco de ventana, tomados del mockup: la aplicacion se presenta
    dentro de un recuadro con su propia barra, no ocupando toda la pantalla. */
 .escenario {
-  max-width: 1320px;
+  max-width: 1600px;
   margin: 0 auto;
   position: relative;
   z-index: 1;

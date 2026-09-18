@@ -26,8 +26,15 @@ export default function LayoutApp() {
               <NavLink to="/entidades" className={claseEnlace}>
                 {esAdmin ? 'Entidades' : 'Mis entidades'}
               </NavLink>
-              <NavLink to="/reportes" className={claseEnlace}>Reportes generados</NavLink>
-              {esAdmin && <NavLink to="/accesos" className={claseEnlace}>Accesos</NavLink>}
+              {esAdmin && (
+                <>
+                  <NavLink to="/concentrado" className={claseEnlace}>Concentrado</NavLink>
+                  <div className="barra__seccion">Administracion</div>
+                  <NavLink to="/usuarios" className={claseEnlace}>Usuarios</NavLink>
+                  <NavLink to="/categorias" className={claseEnlace}>Categorias</NavLink>
+                  <NavLink to="/accesos" className={claseEnlace}>Accesos</NavLink>
+                </>
+              )}
             </div>
 
             <div className="barra__pie">
