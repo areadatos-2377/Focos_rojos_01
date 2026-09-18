@@ -93,7 +93,19 @@
   font-size: 14px;
   font-weight: 500;
   transition: background .15s, color .15s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
+
+.barra__icono {
+  flex-shrink: 0;
+  opacity: .82;
+  transition: opacity .15s, transform .15s;
+}
+
+.barra__enlace:hover .barra__icono { opacity: 1; }
+.barra__enlace--activo .barra__icono { opacity: 1; transform: scale(1.06); }
 
 .barra__enlace:hover { background: rgba(255, 255, 255, .09); color: #fff; }
 
@@ -493,4 +505,130 @@ textarea.campo__control { min-height: 84px; resize: vertical; font-family: inher
   text-transform: uppercase;
   color: rgba(255, 255, 255, .42);
   margin: 16px 0 5px 12px;
+}
+
+/* ---------- Panorama: mosaico y matriz ---------- */
+
+.panel-grafico {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px 20px;
+  margin-bottom: 18px;
+}
+
+.panel-grafico__cabeza {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.panel-grafico__cabeza h2 {
+  font-size: 16px;
+  color: var(--verde-d);
+  margin: 0;
+}
+
+.leyenda { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.leyenda__titulo {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--gray-tx);
+}
+
+.leyenda__paso { display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--gray-tx); }
+
+.leyenda__paso i {
+  width: 13px;
+  height: 13px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  display: block;
+}
+
+/* El hueco de 2px entre piezas lo aporta el gap: separa fondos contiguos sin
+   necesidad de bordes, que ensuciarian la lectura del color. */
+.mosaico {
+  display: grid;
+  gap: 4px;
+  aspect-ratio: 9 / 6;
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.mosaico__pieza {
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 4px;
+  font-family: var(--fuente-texto);
+  transition: transform .12s, box-shadow .12s;
+}
+
+.mosaico__pieza:hover,
+.mosaico__pieza:focus-visible {
+  transform: scale(1.06);
+  box-shadow: 0 4px 14px rgba(22, 26, 29, .22);
+  outline: 2px solid var(--verde-d);
+  outline-offset: 1px;
+  z-index: 2;
+}
+
+.mosaico__sigla { font-size: 10px; font-weight: 700; letter-spacing: .06em; opacity: .85; }
+.mosaico__cifra { font-size: 17px; font-weight: 700; line-height: 1; }
+
+.mosaico__pie {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--gray-tx);
+  min-height: 20px;
+  text-align: center;
+}
+
+.matriz-caja { overflow-x: auto; }
+.matriz { border-collapse: separate; border-spacing: 3px; width: 100%; }
+
+.matriz thead th {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--gray-tx);
+  padding: 0 0 4px;
+  vertical-align: bottom;
+  text-align: center;
+}
+
+.matriz thead th span { display: block; max-width: 84px; margin: 0 auto; line-height: 1.25; }
+
+.matriz tbody th {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--verde-d);
+  text-align: right;
+  padding-right: 8px;
+  white-space: nowrap;
+}
+
+.matriz__celda {
+  display: grid;
+  place-items: center;
+  height: 38px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: default;
 }

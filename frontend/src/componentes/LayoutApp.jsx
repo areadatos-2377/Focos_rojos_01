@@ -1,9 +1,27 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../contextos/AuthContext'
 import { ROLES } from '../utilidades/formato'
+import {
+  DefinicionDegradado,
+  IconoAccesos,
+  IconoCategorias,
+  IconoConcentrado,
+  IconoEntidades,
+  IconoPanorama,
+  IconoUsuarios,
+} from './Iconos'
 
 const claseEnlace = ({ isActive }) =>
   `barra__enlace${isActive ? ' barra__enlace--activo' : ''}`
+
+function Enlace({ a, Icono, children }) {
+  return (
+    <NavLink to={a} className={claseEnlace}>
+      <Icono />
+      <span>{children}</span>
+    </NavLink>
+  )
+}
 
 export default function LayoutApp() {
   const { usuario, salir, esAdmin } = useAuth()
@@ -17,28 +35,36 @@ export default function LayoutApp() {
         </div>
         <div className="app">
           <nav className="barra">
+            <DefinicionDegradado />
+
             <div className="barra__marca">
               <span>IMSS-Bienestar</span>
               Reporte<br />Focos Rojos
             </div>
 
             <div className="barra__nav">
-              <NavLink to="/entidades" className={claseEnlace}>
+              <Enlace a="/entidades" Icono={IconoEntidades}>
                 {esAdmin ? 'Entidades' : 'Mis entidades'}
-              </NavLink>
+              </Enlace>
+
               {esAdmin && (
                 <>
-                  <NavLink to="/concentrado" className={claseEnlace}>Concentrado</NavLink>
+                  <Enlace a="/panorama" Icono={IconoPanorama}>Panorama</Enlace>
+                  <Enlace a="/concentrado" Icono={IconoConcentrado}>Concentrado</Enlace>
+
                   <div className="barra__seccion">Administracion</div>
-                  <NavLink to="/usuarios" className={claseEnlace}>Usuarios</NavLink>
-                  <NavLink to="/categorias" className={claseEnlace}>Categorias</NavLink>
-                  <NavLink to="/accesos" className={claseEnlace}>Accesos</NavLink>
+
+                  <Enlace a="/usuarios" Icono={IconoUsuarios}>Usuarios</Enlace>
+                  <Enlace a="/categorias" Icono={IconoCategorias}>Categorias</Enlace>
+                  <Enlace a="/accesos" Icono={IconoAccesos}>Accesos</Enlace>
                 </>
               )}
             </div>
 
             <div className="barra__pie">
-              <div className="barra__usuario">{usuario?.nombre_completo || usuario?.username}</div>
+              <div className="barra__usuario">
+                {usuario?.nombre_completo || usuario?.username}
+              </div>
               <div className="barra__rol">
                 {ROLES[usuario?.rol] ?? usuario?.rol}
                 {usuario?.region ? ` · ${usuario.region.nombre}` : ''}

@@ -33,3 +33,6 @@ Thumbs.db
 
 # Temporales de generación de reportes
 /backend/tmp/
+
+# Borradores todavia no listos para el repositorio
+docs/borradores/

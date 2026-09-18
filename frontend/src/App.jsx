@@ -5,6 +5,7 @@ import PaginaAcceso from './paginas/Login/PaginaAcceso'
 import PaginaEntidades from './paginas/Entidades/PaginaEntidades'
 import PaginaGaleria from './paginas/Galeria/PaginaGaleria'
 import PaginaReporte from './paginas/Reporte/PaginaReporte'
+import PaginaPanorama from './paginas/Panorama/PaginaPanorama'
 import PaginaConcentrado from './paginas/Concentrado/PaginaConcentrado'
 import PaginaUsuarios from './paginas/Admin/PaginaUsuarios'
 import PaginaCategorias from './paginas/Admin/PaginaCategorias'
@@ -22,6 +23,9 @@ export default function App() {
         <Route path="entidades/:clave/reporte" element={<PaginaReporte />} />
 
         {/* Vistas de alcance nacional: solo administradores. */}
+        <Route path="panorama" element={
+          <RutaProtegida soloAdmin><PaginaPanorama /></RutaProtegida>
+        } />
         <Route path="concentrado" element={
           <RutaProtegida soloAdmin><PaginaConcentrado /></RutaProtegida>
         } />
