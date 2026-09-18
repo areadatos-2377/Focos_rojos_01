@@ -36,19 +36,33 @@
       categoría idempotente, alta, reordenamiento, 409 ante lista parcial, cierre con
       densificación, archivadas y bitácora
 
+### Fase 4 — Generación del reporte ✅
+- [x] `reportes/plantilla.py`: mapa posicional y `escribir_celda` que hereda el `rPr`
+- [x] `reportes/contexto.py`: concatenaciones solo al imprimir
+- [x] `reportes/pdf.py`: LibreOffice con perfil aislado por invocación
+- [x] `POST /api/reportes/vista-previa/` (PDF o .docx, sin persistir)
+- [x] **Riesgo R2 resuelto**: PDF verificado visualmente contra el Word original
+- [x] `.dockerignore`: el `.venv` se copiaba a la imagen (1.23 GB → 1.03 GB)
+
+### Fase 3 — Frontend operativo ✅ compila; falta verlo en un navegador
+- [x] Cliente axios con renovación de token y reintento único
+- [x] `AuthContext` con recuperación de sesión al recargar
+- [x] React Query + rutas protegidas por rol
+- [x] Pantalla de acceso
+- [x] Entidades: agrupadas por región para admins, lista plana para regionales
+- [x] Galería con `@dnd-kit` (asa de arrastre en el número, accesible por teclado)
+      y actualización optimista con reversión ante error
+- [x] Formulario de situación con los 6 campos del formato
+- [x] Selector de categoría con alta incorporada
+- [x] Panel de detalle con bitácora en línea de tiempo
+- [x] Asistente de reporte con vista previa en PDF embebido
+- [x] Compilación de producción limpia: 155 módulos, 333 KB (108 KB gzip)
+
 ## Pendiente
 
-### Fase 3 — Frontend operativo
-- [ ] Cliente axios + React Query + `AuthContext` + rutas protegidas
-- [ ] Pantalla de entidades (agrupada por región para admins)
-- [ ] Galería con `@dnd-kit` y actualización optimista
-- [ ] Formulario de situación, selector de categoría creatable, panel de bitácora
-
-### Fase 4 — Reporte  ⚠️ los riesgos R1 y R2 siguen sin verificarse
-- [ ] `reportes/plantilla.py` (mapa posicional + `escribir_celda`) y test de estructura
-- [ ] `reportes/pdf.py` con LibreOffice y perfil aislado
-- [ ] **Comparar visualmente el PDF generado contra el Word original** (paso 20)
-- [ ] Vista previa
+### Verificación pendiente del frontend
+- [ ] **Abrirlo en un navegador y recorrer el flujo completo.** La compilación pasa,
+      pero no se ha visto renderizado: no hubo navegador disponible en la sesión.
 
 ### Fases 5–7
 - [ ] Versiones en Cloudflare R2 (faltan credenciales del usuario)
