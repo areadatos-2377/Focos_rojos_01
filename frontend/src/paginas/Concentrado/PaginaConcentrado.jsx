@@ -4,6 +4,7 @@ import cliente, { mensajeDeError } from '../../api/cliente'
 import { useCategorias, useEntidades, useRegiones } from '../../api/consultas'
 import { DistintivoEstatus } from '../../componentes/Distintivo'
 import PanelSituacion from '../Galeria/PanelSituacion'
+import FormularioSituacion from '../Galeria/FormularioSituacion'
 import { ESTATUS, fechaCorta } from '../../utilidades/formato'
 
 const SIN_AGRUPAR = ''
@@ -34,6 +35,7 @@ export default function PaginaConcentrado() {
   const [agrupacion, setAgrupacion] = useState('region')
   const [archivadas, setArchivadas] = useState(false)
   const [abierta, setAbierta] = useState(null)
+  const [editando, setEditando] = useState(null)
 
   const { data: regiones = [] } = useRegiones()
   const { data: entidades = [] } = useEntidades()
@@ -258,7 +260,15 @@ export default function PaginaConcentrado() {
           situacionId={abierta.id}
           entidadClave={abierta.entidad}
           onCerrar={() => setAbierta(null)}
-          onEditar={() => setAbierta(null)}
+          onEditar={(situacion) => { setAbierta(null); setEditando(situacion) }}
+        />
+      )}
+
+      {editando && (
+        <FormularioSituacion
+          situacion={editando}
+          entidadClave={editando.entidad}
+          onCerrar={() => setEditando(null)}
         />
       )}
     </>

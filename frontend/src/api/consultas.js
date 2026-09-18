@@ -69,6 +69,7 @@ export const useGuardarSituacion = (entidadClave) => {
         : (await cliente.post('/situaciones/', datos)).data,
     onSuccess: (_, variables) => {
       qc.invalidateQueries({ queryKey: ['situaciones', entidadClave] })
+      qc.invalidateQueries({ queryKey: ['concentrado'] })
       if (variables.id) {
         qc.invalidateQueries({ queryKey: ['situacion', variables.id] })
         qc.invalidateQueries({ queryKey: ['bitacora', variables.id] })
@@ -82,7 +83,10 @@ export const useCambiarArchivado = (entidadClave) => {
   return useMutation({
     mutationFn: async ({ id, accion }) =>
       (await cliente.post(`/situaciones/${id}/${accion}/`)).data,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['situaciones', entidadClave] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['situaciones', entidadClave] })
+      qc.invalidateQueries({ queryKey: ['concentrado'] })
+    },
   })
 }
 
