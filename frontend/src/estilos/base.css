@@ -1,0 +1,36 @@
+@import './tokens.css';
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; }
+
+body {
+  background: var(--bone);
+  color: #211F1C;
+  font-family: var(--fuente-texto);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Halo de fondo del mockup, recoloreado a verde/dorado */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -10%;
+  background:
+    radial-gradient(ellipse 55% 45% at 14% 8%, rgba(30, 91, 79, .12), transparent 60%),
+    radial-gradient(ellipse 50% 45% at 90% 6%, rgba(165, 127, 44, .10), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 95%, rgba(46, 138, 119, .10), transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+#root { position: relative; z-index: 1; }
+
+h1, h2, h3 { font-family: var(--fuente-titulo); font-weight: 600; letter-spacing: -.01em; }
+
+code, .mono { font-family: var(--fuente-mono); }
+
+a { color: var(--verde); }

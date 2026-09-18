@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: focos_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-focos}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-focos}
+      POSTGRES_DB: ${POSTGRES_DB:-focos_rojos}
+    volumes:
+      - datos_postgres:/var/lib/postgresql/data
+    ports:
+      - "5436:5432"   # 5432 lo ocupa censo_db_container
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-focos} -d ${POSTGRES_DB:-focos_rojos}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: focos_backend
+    command: python manage.py runserver 0.0.0.0:8000
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-focos}:${POSTGRES_PASSWORD:-focos}@db:5432/${POSTGRES_DB:-focos_rojos}
+    volumes:
+      - ./backend:/app
+      - ./legacy:/app/legacy:ro
+    ports:
+      - "8001:8000"   # 8000 lo ocupa contrataciones-backend-1
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    image: node:22-alpine
+    container_name: focos_frontend
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    environment:
+      VITE_API_URL: http://localhost:8001/api
+    volumes:
+      - ./frontend:/app
+      - node_modules_frontend:/app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  datos_postgres:
+  node_modules_frontend:

@@ -1,0 +1,42 @@
+/* Tokens tomados de legacy/propuesta-02-modulo-ce-color.html.
+   Cambio respecto al mockup: el guinda deja de ser el color primario; manda el
+   verde institucional y el dorado pasa a ser el acento. */
+:root {
+  /* Primario */
+  --verde: #1E5B4F;
+  --verde-d: #002F2A;
+  --verde-l: #2E8A77;
+  --verde-pale-bg: rgba(30, 91, 79, .10);
+  --verde-pale-tx: #15453C;
+
+  /* Acento */
+  --dorado: #A57F2C;
+  --dorado-l: #D4AC4E;
+  --dorado-pale-bg: rgba(165, 127, 44, .14);
+  --dorado-pale-tx: #7A5E20;
+
+  /* Apoyo (estatus informativo) */
+  --azul: #27548A;
+  --azul-l: #3E7BC0;
+  --azul-pale-bg: rgba(39, 84, 138, .10);
+  --azul-pale-tx: #1E3F69;
+
+  /* Alerta: se reserva para lo urgente, no para la identidad */
+  --alerta: #9B2247;
+  --alerta-pale-bg: rgba(155, 34, 71, .10);
+  --alerta-pale-tx: #7A1B39;
+
+  /* Neutros */
+  --black: #161A1D;
+  --gray: #98989A;
+  --gray-tx: #65656A;
+  --bone: #FBFAF7;
+  --paper: #FFFFFF;
+  --border: #E7E2D9;
+
+  --radius: 14px;
+
+  --fuente-titulo: 'Fraunces', Georgia, serif;
+  --fuente-texto: 'Manrope', system-ui, sans-serif;
+  --fuente-mono: 'JetBrains Mono', ui-monospace, monospace;
+}

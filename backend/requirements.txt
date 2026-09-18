@@ -1,0 +1,20 @@
+# --- Núcleo ---
+Django>=5.2,<5.3
+djangorestframework>=3.15,<3.17
+djangorestframework-simplejwt>=5.3,<6.0
+django-environ>=0.11,<0.13
+django-cors-headers>=4.4,<5.0
+django-filter>=24.3,<26.0
+psycopg[binary]>=3.2,<4.0
+whitenoise>=6.7,<7.0
+gunicorn>=23.0,<24.0
+
+# --- Generación de reportes ---
+python-docx>=1.1,<2.0
+
+# --- Almacenamiento de versiones (Cloudflare R2) ---
+boto3>=1.35,<2.0
+
+# --- Desarrollo y pruebas ---
+pytest>=8.3,<9.0
+pytest-django>=4.9,<5.0

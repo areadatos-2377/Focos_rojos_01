@@ -1,0 +1,17 @@
+# Normaliza finales de linea: el repositorio guarda LF siempre.
+* text=auto eol=lf
+
+# Estos DEBEN ser LF: con CRLF el contenedor Linux falla al arrancar con un
+# error de interprete dificil de diagnosticar.
+*.sh text eol=lf
+entrypoint.sh text eol=lf
+Dockerfile text eol=lf
+
+# Binarios: que Git no los toque.
+*.docx binary
+*.pdf binary
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff binary
+*.woff2 binary

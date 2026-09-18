@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Propuesta 02 — Módulo CE (color) · Sistema de Gestión de Contrataciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --guinda:#9B2247; --guinda-d:#611232; --guinda-l:#C53D6B; --guinda-pale-bg:rgba(155,34,71,.10); --guinda-pale-tx:#7A1B39;
+    --verde:#1E5B4F; --verde-d:#002F2A; --verde-l:#2E8A77; --verde-pale-bg:rgba(30,91,79,.10); --verde-pale-tx:#15453C;
+    --dorado:#A57F2C; --dorado-l:#D4AC4E; --dorado-pale-bg:rgba(165,127,44,.14); --dorado-pale-tx:#7A5E20;
+    --azul:#27548A; --azul-l:#3E7BC0; --azul-pale-bg:rgba(39,84,138,.10); --azul-pale-tx:#1E3F69;
+    --black:#161A1D; --gray:#98989A; --gray-tx:#65656A;
+    --bone:#FBFAF7; --paper:#FFFFFF; --border:#E7E2D9;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; }
+  body{
+    background:var(--bone);
+    color:#211F1C;
+    font-family:'Manrope',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    padding:42px 24px;
+    position:relative;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:-10%;
+    background:radial-gradient(ellipse 55% 45% at 14% 8%, rgba(155,34,71,.10), transparent 60%),
+               radial-gradient(ellipse 50% 45% at 90% 6%, rgba(165,127,44,.10), transparent 60%),
+               radial-gradient(ellipse 60% 50% at 80% 95%, rgba(30,91,79,.10), transparent 60%);
+    pointer-events:none; z-index:0;
+  }
+
+  .stage{ max-width:1320px; margin:0 auto; position:relative; z-index:1; }
+  .stage-label{
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--gray-tx); margin:0 0 14px; display:flex; align-items:center; gap:8px;
+  }
+  .stage-label .dot{ width:6px;height:6px;border-radius:50%; background:var(--guinda); }
+
+  /* ---- faux window chrome ---- */
+  .frame{
+    background:var(--paper);
+    border:1px solid var(--border);
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 1px 1px rgba(22,26,29,.03), 0 28px 70px -32px rgba(22,26,29,.22);
+  }
+  .frame-bar{
+    height:42px; display:flex; align-items:center; gap:7px; padding:0 16px;
+    border-bottom:1px solid var(--border); background:var(--bone);
+  }
+  .frame-bar i{ width:10px; height:10px; border-radius:50%; background:#E3DED3; display:block; }
+
+  /* ---- app shell ---- */
+  .shell{ display:grid; grid-template-columns:252px 1fr; min-height:720px; }
+
+  /* sidebar */
+  .sidebar{
+    display:flex; flex-direction:column; color:#fff; position:relative; overflow:hidden;
+    background:
+      radial-gradient(ellipse 120% 60% at 0% 0%, rgba(212,172,78,.30), transparent 55%),
+      linear-gradient(165deg, var(--guinda-d) 0%, #4A0E28 55%, var(--verde-d) 130%);
+  }
+  .brand{ padding:26px 22px 20px; border-bottom:1px solid rgba(255,255,255,.14); position:relative; z-index:1; }
+  .brand .mark{
+    width:32px; height:32px; border-radius:9px; background:linear-gradient(135deg, var(--dorado-l), var(--dorado));
+    display:flex; align-items:center; justify-content:center; color:var(--guinda-d); font-family:'Fraunces',serif; font-weight:700; font-size:16px;
+    margin-bottom:14px; box-shadow:0 4px 14px rgba(0,0,0,.25);
+  }
+  .brand h1{ font-family:'Fraunces',serif; font-size:17px; font-weight:600; margin:0 0 2px; letter-spacing:-.01em; color:#fff; }
+  .brand p{ font-size:11px; color:rgba(255,255,255,.6); margin:0; letter-spacing:.04em; text-transform:uppercase; }
+
+  .nav{ padding:18px 14px; flex:1; position:relative; z-index:1; }
+  .nav-section{ font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:rgba(255,255,255,.45); margin:14px 8px 8px; font-weight:700; }
+  .nav-item{
+    display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:9px;
+    font-size:13.5px; font-weight:600; color:rgba(255,255,255,.78); text-decoration:none; margin-bottom:3px;
+    transition:background .15s ease;
+  }
+  .nav-item svg{ width:17px; height:17px; flex-shrink:0; color:rgba(255,255,255,.55); }
+  .nav-item:hover{ background:rgba(255,255,255,.08); }
+  .nav-item.active{ background:linear-gradient(135deg, var(--dorado-l), var(--dorado)); color:var(--guinda-d); font-weight:800; box-shadow:0 6px 16px -4px rgba(0,0,0,.35); }
+  .nav-item.active svg{ color:var(--guinda-d); }
+  .nav-item .count{
+    margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:10.5px; color:rgba(255,255,255,.75);
+    background:rgba(255,255,255,.12); padding:1px 6px; border-radius:5px;
+  }
+  .nav-item.active .count{ background:rgba(255,255,255,.35); color:var(--guinda-d); }
+
+  .user-card{
+    margin:14px; padding:13px; border:1px solid rgba(255,255,255,.16); border-radius:12px; display:flex; align-items:center; gap:10px;
+    background:rgba(255,255,255,.06); position:relative; z-index:1;
+  }
+  .user-avatar{
+    width:34px;height:34px;border-radius:9px; background:linear-gradient(135deg, var(--verde-l), var(--verde-d)); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; font-family:'Manrope',sans-serif;
+    flex-shrink:0;
+  }
+  .user-meta p{ margin:0; font-size:12.5px; font-weight:700; line-height:1.3; color:#fff; }
+  .user-meta span{ font-size:11px; color:rgba(255,255,255,.6); }
+
+  /* main */
+  .main{ padding:26px 30px 34px; min-width:0; }
+  .topbar{ display:flex; align-items:center; gap:14px; margin-bottom:24px; }
+  .crumb{ font-size:12px; color:var(--gray-tx); margin:0 0 4px; }
+  .crumb b{ color:var(--guinda); }
+  .titlewrap h2{ font-family:'Fraunces',serif; font-size:25px; font-weight:600; margin:0; letter-spacing:-.01em; }
+
+  .search{
+    margin-left:auto; display:flex; align-items:center; gap:8px;
+    border:1.5px solid var(--border); border-radius:10px; padding:8px 12px; background:var(--paper);
+    width:240px; transition:border-color .15s ease;
+  }
+  .search:focus-within{ border-color:var(--azul-l); }
+  .search svg{ width:15px;height:15px; color:var(--gray-tx); flex-shrink:0; }
+  .search input{ border:none; outline:none; font-family:'Manrope',sans-serif; font-size:13px; width:100%; background:transparent; }
+
+  .iconbtn{
+    width:38px;height:38px; border-radius:10px; border:1.5px solid var(--border); background:var(--paper);
+    display:flex; align-items:center; justify-content:center; position:relative; cursor:pointer; flex-shrink:0;
+  }
+  .iconbtn svg{ width:17px;height:17px; color:var(--gray-tx); }
+  .iconbtn .ping{ position:absolute; top:6px; right:6px; width:8px;height:8px; border-radius:50%; background:var(--guinda); border:2px solid var(--paper); }
+
+  .btn-primary{
+    display:inline-flex; align-items:center; gap:7px; color:#fff; border:none;
+    background:var(--guinda);
+    padding:0 18px; height:38px; border-radius:10px; font-family:'Manrope',sans-serif; font-weight:700; font-size:13px;
+    cursor:pointer; transition:background .15s ease, transform .1s ease; white-space:nowrap;
+    box-shadow:0 8px 20px -8px rgba(155,34,71,.55);
+  }
+  .btn-primary:hover{ background:var(--guinda-d); }
+  .btn-primary:active{ transform:scale(.98); }
+  .btn-primary svg{ width:15px;height:15px; }
+
+  /* stat strip */
+  .stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+  .stat{
+    background:var(--paper); border:1px solid var(--border); border-top:3px solid var(--accent); border-radius:var(--radius); padding:18px 20px;
+    transition:box-shadow .2s ease, transform .2s ease; position:relative; overflow:hidden;
+    opacity:0; animation:rise .5s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  .stat::after{
+    content:""; position:absolute; top:-30px; right:-30px; width:90px; height:90px; border-radius:50%;
+    background:var(--accent); opacity:.08;
+  }
+  .stat:hover{ box-shadow:0 8px 22px -10px rgba(22,26,29,.18); transform:translateY(-2px); }
+  .stat.c-guinda{ --accent:var(--guinda); } .stat.c-dorado{ --accent:var(--dorado); }
+  .stat.c-verde{ --accent:var(--verde); } .stat.c-azul{ --accent:var(--azul); }
+  .stat .icon{
+    width:34px;height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center;
+    background:var(--accent); color:#fff; margin-bottom:12px; position:relative; z-index:1;
+  }
+  .stat .icon svg{ width:17px;height:17px; }
+  .stat .lbl{ font-size:11.5px; color:var(--gray-tx); margin:0 0 6px; letter-spacing:.01em; position:relative; z-index:1; }
+  .stat .val{ font-family:'Fraunces',serif; font-size:28px; font-weight:600; margin:0; line-height:1; position:relative; z-index:1; }
+  .stat .sub{ font-size:11px; margin-top:8px; display:flex; align-items:center; gap:5px; position:relative; z-index:1; font-weight:700; }
+  .sub.up{ color:var(--verde-pale-tx); } .sub.warn{ color:var(--dorado-pale-tx); } .sub.flat{ color:var(--gray-tx); font-weight:500; }
+
+  /* filters */
+  .filters{ display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+  .chip{
+    display:inline-flex; align-items:center; gap:6px; border:1.5px solid var(--border); background:var(--paper);
+    padding:7px 13px; border-radius:9px; font-size:12.5px; font-weight:700; color:#3A3733; cursor:pointer;
+  }
+  .chip svg{ width:13px;height:13px; color:var(--gray-tx); }
+  .chip.is-set{ border-color:var(--azul-l); color:var(--azul-pale-tx); background:var(--azul-pale-bg); }
+  .filters .clear{ font-size:12px; color:var(--guinda); margin-left:4px; text-decoration:underline; cursor:pointer; font-weight:600; }
+
+  /* table */
+  .tablewrap{ background:var(--paper); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+  table{ width:100%; border-collapse:collapse; }
+  thead th{
+    text-align:left; font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:#fff;
+    font-weight:700; padding:13px 18px; border-bottom:1px solid var(--border);
+    background:var(--guinda-d);
+  }
+  tbody td{ padding:14px 18px; border-bottom:1px solid var(--border); font-size:13.5px; vertical-align:middle; }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody tr{ opacity:0; animation:rise .45s cubic-bezier(.16,1,.3,1) forwards; transition:background .15s ease; }
+  tbody tr:hover{ background:var(--azul-pale-bg); }
+
+  .curp{ font-family:'JetBrains Mono',monospace; font-size:12px; color:#3A3733; }
+  .nombre{ font-weight:700; }
+  .meta-sub{ font-size:11.5px; color:var(--gray-tx); margin-top:2px; }
+
+  .perfil{ display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; }
+  .perfil .dot{ width:8px;height:8px;border-radius:50%; }
+  .perfil.especial .dot{ background:var(--dorado); box-shadow:0 0 0 3px var(--dorado-pale-bg); }
+  .perfil.normal .dot{ background:var(--azul-l); box-shadow:0 0 0 3px var(--azul-pale-bg); }
+
+  .badge{
+    display:inline-flex; align-items:center; padding:5px 12px; border-radius:9999px; color:#fff;
+    font-size:10.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; white-space:nowrap;
+  }
+  .badge.borrador{ background:var(--gray); }
+  .badge.transito{ background:var(--dorado); color:#3D2F0F; }
+  .badge.positivo{ background:var(--verde); }
+  .badge.negativo{ background:var(--guinda); }
+
+  .actions{ display:flex; gap:6px; justify-content:flex-end; }
+  .actions button{
+    width:31px;height:31px; border-radius:8px; border:1.5px solid var(--border); background:var(--paper);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; transition:border-color .15s ease, background .15s ease;
+  }
+  .actions button:hover{ border-color:var(--azul-l); background:var(--azul-pale-bg); }
+  .actions svg{ width:14.5px;height:14.5px; color:var(--gray-tx); }
+
+  .tfoot{ display:flex; align-items:center; justify-content:space-between; padding:13px 18px; font-size:12px; color:var(--gray-tx); border-top:1px solid var(--border); background:#FCFBF8; }
+  .tfoot .pages{ display:flex; gap:4px; }
+  .tfoot .pages span{ width:27px;height:27px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-weight:600; }
+  .tfoot .pages span.cur{ background:var(--guinda); color:#fff; font-weight:800; }
+
+  @keyframes rise{ from{ opacity:0; transform:translateY(8px);} to{ opacity:1; transform:translateY(0);} }
+  .stat:nth-child(1){ animation-delay:.02s; } .stat:nth-child(2){ animation-delay:.08s; }
+  .stat:nth-child(3){ animation-delay:.14s; } .stat:nth-child(4){ animation-delay:.2s; }
+
+  @media(max-width:980px){
+    .shell{ grid-template-columns:1fr; } .sidebar{ display:none; }
+    .stats{ grid-template-columns:repeat(2,1fr); }
+  }
+
+  /* ---- modal: cargar candidato ---- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(22,26,29,.45); backdrop-filter:blur(3px);
+    display:flex; align-items:center; justify-content:center; padding:24px; z-index:50;
+    opacity:0; visibility:hidden; transition:opacity .2s ease;
+  }
+  .modal-overlay.show{ opacity:1; visibility:visible; }
+  .modal{
+    background:var(--paper); border:1px solid var(--border); border-radius:18px; width:100%; max-width:580px;
+    max-height:88vh; overflow-y:auto; box-shadow:0 28px 70px -20px rgba(74,14,40,.45);
+    transform:translateY(10px) scale(.98); transition:transform .2s ease;
+  }
+  .modal-overlay.show .modal{ transform:translateY(0) scale(1); }
+  .modal-head{
+    display:flex; align-items:flex-start; justify-content:space-between; gap:14px; padding:22px 24px;
+    background:var(--guinda-d); color:#fff;
+  }
+  .modal-head h3{ font-family:'Fraunces',serif; font-size:20px; font-weight:600; margin:0 0 4px; letter-spacing:-.01em; color:#fff; }
+  .modal-head p{ font-size:12.5px; color:rgba(255,255,255,.75); margin:0; max-width:400px; line-height:1.5; }
+  .modal-close{
+    width:30px;height:30px; border-radius:8px; border:1px solid rgba(255,255,255,.3); background:rgba(255,255,255,.1);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;
+  }
+  .modal-close svg{ width:14px;height:14px; color:#fff; }
+  .modal-close:hover{ background:rgba(255,255,255,.22); }
+  .modal-body{ padding:22px 24px; }
+  .form-section{ margin-bottom:22px; }
+  .form-section:last-child{ margin-bottom:0; }
+  .form-section-title{
+    font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--guinda); margin:0 0 12px; display:flex; align-items:center; gap:7px;
+  }
+  .form-section-title::before{ content:""; width:14px; height:2px; background:var(--dorado); border-radius:2px; }
+  .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  .field.full{ grid-column:1 / -1; }
+  .field label{ font-size:12px; font-weight:700; color:#3A3733; }
+  .field label .req{ color:var(--guinda); }
+  .field input, .field select, .field textarea{
+    border:1.5px solid var(--border); border-radius:9px; padding:9px 11px; font-family:'Manrope',sans-serif; font-size:13.5px;
+    color:#211F1C; background:var(--paper); outline:none; transition:border-color .15s ease, box-shadow .15s ease; width:100%;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{ border-color:var(--azul-l); box-shadow:0 0 0 3px var(--azul-pale-bg); }
+  .field textarea{ resize:vertical; min-height:64px; }
+  .field-hint{ font-size:11px; color:var(--gray-tx); }
+  .perfil-toggle{ display:flex; gap:8px; }
+  .perfil-option{
+    flex:1; border:1.5px solid var(--border); border-radius:9px; padding:9px 12px;
+    display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:#3A3733; cursor:pointer;
+  }
+  .perfil-option input{ accent-color:var(--guinda); }
+  .perfil-option.checked{ border-color:var(--dorado); background:var(--dorado-pale-bg); color:var(--dorado-pale-tx); }
+  .modal-foot{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 24px; border-top:1px solid var(--border); background:#FCFBF8; }
+  .modal-foot .hint{ font-size:11.5px; color:var(--gray-tx); }
+  .modal-foot .hint b{ color:var(--guinda); }
+  .foot-actions{ display:flex; gap:8px; }
+  .btn-ghost{
+    background:transparent; border:1.5px solid var(--border); color:#3A3733; font-weight:700; font-size:13px;
+    height:38px; padding:0 16px; border-radius:10px; cursor:pointer; font-family:'Manrope',sans-serif;
+  }
+  .btn-ghost:hover{ background:#F4F1EA; }
+
+  /* ---- documentos iniciales ---- */
+  .doc-list{ display:flex; flex-direction:column; gap:9px; }
+  .doc-item{
+    display:flex; align-items:center; gap:12px; border:1.5px solid var(--border); border-radius:11px;
+    padding:10px 12px; transition:border-color .15s ease, background .15s ease;
+  }
+  .doc-item.is-done{ border-color:var(--verde); background:var(--verde-pale-bg); }
+  .doc-icon{
+    width:34px;height:34px;border-radius:9px; background:#F0EEE8; color:var(--gray-tx);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background .15s ease, color .15s ease;
+  }
+  .doc-icon svg{ width:16px;height:16px; }
+  .doc-item.is-done .doc-icon{ background:var(--verde); color:#fff; }
+  .doc-info{ flex:1; min-width:0; }
+  .doc-info .doc-name{ font-size:13px; font-weight:700; color:#3A3733; line-height:1.3; }
+  .doc-info .doc-meta{ font-size:11px; color:var(--gray-tx); margin-top:1px; }
+  .doc-action{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
+  .doc-upload-btn{
+    display:inline-flex; align-items:center; gap:6px; border:1.5px solid var(--border); background:var(--paper);
+    padding:7px 13px; border-radius:8px; font-size:12px; font-weight:700; color:#3A3733; cursor:pointer;
+    font-family:'Manrope',sans-serif; white-space:nowrap;
+  }
+  .doc-upload-btn svg{ width:13px;height:13px; }
+  .doc-upload-btn:hover{ border-color:var(--azul-l); background:var(--azul-pale-bg); color:var(--azul-pale-tx); }
+  .doc-check{
+    width:24px;height:24px; border-radius:50%; background:var(--verde); color:#fff;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .doc-check svg{ width:13px;height:13px; }
+  .doc-progress{ font-size:11.5px; color:var(--gray-tx); margin:10px 0 0; text-align:right; }
+  .doc-progress b{ color:var(--verde-pale-tx); }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <p class="stage-label"><span class="dot"></span>Propuesta 02 · Módulo CE — Listado de seguimiento · variante a color, paleta institucional saturada</p>
+
+  <div class="frame">
+    <div class="frame-bar"><i></i><i></i><i></i></div>
+
+    <div class="shell">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="mark">C</div>
+          <h1>Contrataciones</h1>
+          <p>IMSS-Bienestar</p>
+        </div>
+        <nav class="nav">
+          <div class="nav-section">Coordinación de Enlace</div>
+          <a class="nav-item" href="#">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            Mi panel
+          </a>
+          <a class="nav-item active" href="#">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Candidatos
+            <span class="count">128</span>
+          </a>
+          <a class="nav-item" href="#">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+            Expedientes
+          </a>
+          <a class="nav-item" href="#">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            Notificaciones
+            <span class="count">5</span>
+          </a>
+          <div class="nav-section">Cuenta</div>
+          <a class="nav-item" href="#">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.13.3.2.62.2.96"/></svg>
+            Configuración
+          </a>
+        </nav>
+        <div class="user-card">
+          <div class="user-avatar">RM</div>
+          <div class="user-meta">
+            <p>Renata Morales</p>
+            <span>Coordinación de Enlace · Chiapas</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- MAIN -->
+      <main class="main">
+        <div class="topbar">
+          <div class="titlewrap">
+            <p class="crumb">CE · <b>Candidatos</b></p>
+            <h2>Seguimiento de candidatos</h2>
+          </div>
+          <div class="search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" placeholder="Buscar por CURP o nombre…">
+          </div>
+          <button class="iconbtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="ping"></span>
+          </button>
+          <button class="btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Cargar candidato
+          </button>
+        </div>
+
+        <div class="stats">
+          <div class="stat c-azul">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <p class="lbl">Candidatos activos</p>
+            <p class="val">128</p>
+            <p class="sub flat">23 unidades de Chiapas</p>
+          </div>
+          <div class="stat c-dorado">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+            <p class="lbl">Pendientes de subsanar</p>
+            <p class="val">9</p>
+            <p class="sub warn">Requieren tu atención</p>
+          </div>
+          <div class="stat c-guinda">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg></div>
+            <p class="lbl">Rechazos últimos 30 días</p>
+            <p class="val">14</p>
+            <p class="sub flat">11 % del total enviado</p>
+          </div>
+          <div class="stat c-verde">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg></div>
+            <p class="lbl">Tasa de aprobación propia</p>
+            <p class="val">82 %</p>
+            <p class="sub up">+4 pts vs. mes anterior</p>
+          </div>
+        </div>
+
+        <div class="filters">
+          <button class="chip is-set">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+            Estatus: 3 seleccionados
+          </button>
+          <button class="chip">Unidad (CLUES)</button>
+          <button class="chip">Puesto</button>
+          <button class="chip">Perfil</button>
+          <button class="chip">Fecha de carga</button>
+          <span class="clear">Limpiar filtros</span>
+        </div>
+
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr>
+                <th>CURP</th>
+                <th>Candidato</th>
+                <th>Unidad / Puesto</th>
+                <th>Perfil</th>
+                <th>Fecha de carga</th>
+                <th>Estatus</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="animation-delay:.02s">
+                <td class="curp">GORA960512MCSNZL08</td>
+                <td><div class="nombre">Araceli Gómez Ruiz</div><div class="meta-sub">Folio CE-2026-1182</div></td>
+                <td>Hospital Rural No. 42<div class="meta-sub">Enfermería General · Nivel 3</div></td>
+                <td><div class="perfil normal"><span class="dot"></span>Normal</div></td>
+                <td>28 jun 2026</td>
+                <td><span class="badge transito">Enviado a UAS</span></td>
+                <td><div class="actions"><button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></td>
+              </tr>
+              <tr style="animation-delay:.06s">
+                <td class="curp">MELJ881203HCSXPN05</td>
+                <td><div class="nombre">Jorge Meléndez Pineda</div><div class="meta-sub">Folio CE-2026-1179</div></td>
+                <td>Hospital Comunitario Ocosingo<div class="meta-sub">Médico General · Nivel 2</div></td>
+                <td><div class="perfil especial"><span class="dot"></span>Especial</div></td>
+                <td>27 jun 2026</td>
+                <td><span class="badge negativo">Rechazado UAS</span></td>
+                <td><div class="actions"><button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button></div></td>
+              </tr>
+              <tr style="animation-delay:.1s">
+                <td class="curp">TOSP930827MCSRRL02</td>
+                <td><div class="nombre">Perla Torres Solano</div><div class="meta-sub">Folio CE-2026-1175</div></td>
+                <td>Centro de Salud Tila<div class="meta-sub">Especialista en Pediatría · Nivel 4</div></td>
+                <td><div class="perfil normal"><span class="dot"></span>Normal</div></td>
+                <td>26 jun 2026</td>
+                <td><span class="badge positivo">Aprobado UAS</span></td>
+                <td><div class="actions"><button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></td>
+              </tr>
+              <tr style="animation-delay:.14s">
+                <td class="curp">CAHR900114HCSRRD09</td>
+                <td><div class="nombre">Rodrigo Carranza Hidalgo</div><div class="meta-sub">Folio CE-2026-1171</div></td>
+                <td>Hospital Rural No. 42<div class="meta-sub">Paramédico · Nivel 2</div></td>
+                <td><div class="perfil normal"><span class="dot"></span>Normal</div></td>
+                <td>25 jun 2026</td>
+                <td><span class="badge transito">En priorización UPE</span></td>
+                <td><div class="actions"><button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></td>
+              </tr>
+              <tr style="animation-delay:.18s">
+                <td class="curp">VAZL870630MCSLPR01</td>
+                <td><div class="nombre">Lorena Vázquez Pérez</div><div class="meta-sub">Folio CE-2026-1168</div></td>
+                <td>Centro de Salud Yajalón<div class="meta-sub">Auxiliar Administrativo · Nivel 1</div></td>
+                <td><div class="perfil normal"><span class="dot"></span>Normal</div></td>
+                <td>24 jun 2026</td>
+                <td><span class="badge borrador">Borrador</span></td>
+                <td><div class="actions"><button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button></div></td>
+              </tr>
+              <tr style="animation-delay:.22s">
+                <td class="curp">DOMA950219HCSMRN07</td>
+                <td><div class="nombre">Andrés Domínguez Marín</div><div class="meta-sub">Folio CE-2026-1160</div></td>
+                <td>Hospital Comunitario Ocosingo<div class="meta-sub">Médico Especialista · Nivel 5</div></td>
+                <td><div class="perfil especial"><span class="dot"></span>Especial</div></td>
+                <td>22 jun 2026</td>
+                <td><span class="badge transito">Preparar para UAF</span></td>
+                <td><div class="actions"><button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></td>
+              </tr>
+              <tr style="animation-delay:.26s">
+                <td class="curp">RUIF920405MCSZNS06</td>
+                <td><div class="nombre">Fátima Ruiz Zenteno</div><div class="meta-sub">Folio CE-2026-1155</div></td>
+                <td>Centro de Salud Tila<div class="meta-sub">Enfermería General · Nivel 2</div></td>
+                <td><div class="perfil normal"><span class="dot"></span>Normal</div></td>
+                <td>20 jun 2026</td>
+                <td><span class="badge positivo">Aprobado UAF</span></td>
+                <td><div class="actions"><button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="tfoot">
+            <span>Mostrando 1–7 de 128 candidatos</span>
+            <div class="pages"><span class="cur">1</span><span>2</span><span>3</span><span>…</span><span>19</span></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: cargar candidato -->
+<div class="modal-overlay" id="modalCargar">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3>Cargar candidato</h3>
+        <p>Crea una nueva postulación en estado Borrador. Podrás cargar los documentos en el siguiente paso.</p>
+      </div>
+      <button class="modal-close" id="modalClose" type="button" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <form id="formCargar">
+        <div class="form-section">
+          <p class="form-section-title">Identidad</p>
+          <div class="form-grid">
+            <div class="field full">
+              <label>CURP <span class="req">*</span></label>
+              <input type="text" placeholder="GORA960512MCSNZL08" maxlength="18" style="text-transform:uppercase;">
+              <span class="field-hint">Valida unicidad (R01/R02) al guardar.</span>
+            </div>
+            <div class="field full">
+              <label>Nombre completo <span class="req">*</span></label>
+              <input type="text" placeholder="Nombre(s) y apellidos">
+            </div>
+            <div class="field">
+              <label>Fecha de nacimiento <span class="req">*</span></label>
+              <input type="date">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <p class="form-section-title">Postulación</p>
+          <div class="form-grid">
+            <div class="field">
+              <label>Unidad (CLUES) <span class="req">*</span></label>
+              <select>
+                <option value="">Selecciona unidad…</option>
+                <option>Hospital Rural No. 42</option>
+                <option>Hospital Comunitario Ocosingo</option>
+                <option>Centro de Salud Tila</option>
+                <option>Centro de Salud Yajalón</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Puesto solicitado <span class="req">*</span></label>
+              <select>
+                <option value="">Selecciona puesto…</option>
+                <option>Enfermería General</option>
+                <option>Médico General</option>
+                <option>Especialista en Pediatría</option>
+                <option>Paramédico</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Nivel <span class="req">*</span></label>
+              <select>
+                <option value="">Selecciona nivel…</option>
+                <option>Nivel 1</option>
+                <option>Nivel 2</option>
+                <option>Nivel 3</option>
+                <option>Nivel 4</option>
+                <option>Nivel 5</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Perfil <span class="req">*</span></label>
+              <div class="perfil-toggle">
+                <label class="perfil-option checked">
+                  <input type="radio" name="perfil" checked> Normal
+                </label>
+                <label class="perfil-option">
+                  <input type="radio" name="perfil"> Especial
+                </label>
+              </div>
+            </div>
+            <div class="field full">
+              <label>Observaciones</label>
+              <textarea placeholder="Notas internas de la CE (opcional)"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <p class="form-section-title">Documentos iniciales (5)</p>
+          <span class="field-hint" style="display:block; margin:-4px 0 12px;">Lista referencial según R06 del documento funcional — el listado exacto sigue 🔶 pendiente de confirmar (blueprint, sección 0, punto 4).</span>
+
+          <div class="doc-list" id="docList">
+            <div class="doc-item is-done">
+              <div class="doc-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+              </div>
+              <div class="doc-info">
+                <div class="doc-name">Cédula profesional o carta compromiso</div>
+                <div class="doc-meta">cedula_araceli_gomez.pdf · 1.2 MB</div>
+              </div>
+              <div class="doc-action">
+                <span class="doc-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+                <button class="doc-upload-btn" type="button" data-doc-action="replace">Cambiar</button>
+              </div>
+            </div>
+
+            <div class="doc-item is-done">
+              <div class="doc-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+              </div>
+              <div class="doc-info">
+                <div class="doc-name">Título profesional</div>
+                <div class="doc-meta">titulo_araceli_gomez.pdf · 890 KB</div>
+              </div>
+              <div class="doc-action">
+                <span class="doc-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+                <button class="doc-upload-btn" type="button" data-doc-action="replace">Cambiar</button>
+              </div>
+            </div>
+
+            <div class="doc-item">
+              <div class="doc-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+              </div>
+              <div class="doc-info">
+                <div class="doc-name">Curriculum Vitae (CV)</div>
+                <div class="doc-meta">PDF · máx. 5 MB</div>
+              </div>
+              <div class="doc-action">
+                <button class="doc-upload-btn" type="button" data-doc-action="upload">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 8 5-5 5 5"/><path d="M5 21h14"/></svg>
+                  Cargar
+                </button>
+              </div>
+            </div>
+
+            <div class="doc-item">
+              <div class="doc-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+              </div>
+              <div class="doc-info">
+                <div class="doc-name">Cédula fiscal (RFC)</div>
+                <div class="doc-meta">PDF · máx. 5 MB</div>
+              </div>
+              <div class="doc-action">
+                <button class="doc-upload-btn" type="button" data-doc-action="upload">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 8 5-5 5 5"/><path d="M5 21h14"/></svg>
+                  Cargar
+                </button>
+              </div>
+            </div>
+
+            <div class="doc-item">
+              <div class="doc-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+              </div>
+              <div class="doc-info">
+                <div class="doc-name">INE</div>
+                <div class="doc-meta">PDF · máx. 5 MB</div>
+              </div>
+              <div class="doc-action">
+                <button class="doc-upload-btn" type="button" data-doc-action="upload">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 8 5-5 5 5"/><path d="M5 21h14"/></svg>
+                  Cargar
+                </button>
+              </div>
+            </div>
+          </div>
+          <p class="doc-progress" id="docProgress"><b>2</b> de 5 documentos cargados</p>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-foot">
+      <span class="hint">Se guardará como <b>Borrador</b>.</span>
+      <div class="foot-actions">
+        <button class="btn-ghost" type="button" id="modalCancel">Cancelar</button>
+        <button class="btn-primary" type="submit" form="formCargar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg>
+          Guardar y continuar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    var overlay = document.getElementById('modalCargar');
+    var openBtn = document.querySelector('.topbar .btn-primary');
+    var closeBtn = document.getElementById('modalClose');
+    var cancelBtn = document.getElementById('modalCancel');
+    var form = document.getElementById('formCargar');
+
+    function open(){ overlay.classList.add('show'); }
+    function close(){ overlay.classList.remove('show'); }
+
+    openBtn.addEventListener('click', open);
+    closeBtn.addEventListener('click', close);
+    cancelBtn.addEventListener('click', close);
+    overlay.addEventListener('click', function(e){ if(e.target === overlay) close(); });
+    document.addEventListener('keydown', function(e){ if(e.key === 'Escape') close(); });
+    form.addEventListener('submit', function(e){ e.preventDefault(); close(); });
+
+    document.querySelectorAll('.perfil-option').forEach(function(opt){
+      opt.addEventListener('click', function(){
+        document.querySelectorAll('.perfil-option').forEach(function(o){ o.classList.remove('checked'); });
+        opt.classList.add('checked');
+      });
+    });
+
+    var docList = document.getElementById('docList');
+    var docProgress = document.getElementById('docProgress');
+
+    function updateDocProgress(){
+      var total = docList.querySelectorAll('.doc-item').length;
+      var done = docList.querySelectorAll('.doc-item.is-done').length;
+      docProgress.innerHTML = '<b>' + done + '</b> de ' + total + ' documentos cargados';
+    }
+
+    docList.addEventListener('click', function(e){
+      var btn = e.target.closest('.doc-upload-btn');
+      if(!btn) return;
+      var item = btn.closest('.doc-item');
+      if(btn.dataset.docAction === 'upload'){
+        item.classList.add('is-done');
+        item.querySelector('.doc-meta').textContent = 'documento_cargado.pdf · 1.0 MB';
+        item.querySelector('.doc-action').innerHTML =
+          '<span class="doc-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>' +
+          '<button class="doc-upload-btn" type="button" data-doc-action="replace">Cambiar</button>';
+        updateDocProgress();
+      }
+    });
+
+    updateDocProgress();
+  })();
+</script>
+
+</body>
+</html>
